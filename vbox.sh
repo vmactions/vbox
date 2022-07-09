@@ -323,6 +323,18 @@ startWeb() {
 }
 
 
+exportOVA() {
+  _osname="$1"
+  _ova="$2"
+  if [ -z "$_ova" ]; then
+    echo "Usage: exportOVA netbsd netbsd.9.2.ova"
+    return 1
+  fi
+
+  sudo vboxmanage export $_osname --output "$_ova"
+}
+
+
 #osname port 
 addSSHHost() {
   _osname="$1"
