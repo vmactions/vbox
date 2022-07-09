@@ -176,7 +176,7 @@ screenText() {
 <pre>
 ' >index.html
   cat screen.txt >>index.html
-  cat '</pre></body></html>'
+  echo '</pre></body></html>' >>index.html
 
 }
 
