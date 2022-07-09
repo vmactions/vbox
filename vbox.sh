@@ -158,7 +158,7 @@ screenText() {
   fi
 
   _png="${_img:-$_osname.png}"
-  while ! sudo vboxmanage controlvm $_osname screenshotpng  $_png ; do
+  while ! sudo vboxmanage controlvm $_osname screenshotpng  $_png 2>&1 >/dev/null ; do
     #echo "screenText error, lets just wait"
     sleep 3
   done
