@@ -363,7 +363,10 @@ input() {
     return 1
   fi
   shift
+  (
+  export VM_OS_NAME=$_osname
   eval "$*"
+  )
 }
 
 
