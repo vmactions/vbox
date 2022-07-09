@@ -167,12 +167,14 @@ screenText() {
   fi
 
   _png="${_img:-$_osname.png}"
-  while ! sudo vboxmanage controlvm $_osname screenshotpng  $_png  >/dev/null 2>&1; do
+  while ! sudo vboxmanage controlvm $_osname screenshotpng  temp.$_png  >/dev/null 2>&1; do
     #echo "screenText error, lets just wait"
     sleep 3
   done
-  sudo chmod 666 $_png
-  
+  rm -rf $_png
+  sudo chmod 666 temp.$_png
+  mv temp.$_png  $_png
+
   if [ -z "$_img" ]; then
     pytesseract $_png
   else
