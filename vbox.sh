@@ -68,6 +68,36 @@ startVM() {
 }
 
 
+#osname  optsfile
+processOpts() {
+  _osname="$1"
+  _optsfile="$2"
+
+  if [ -z "$_optsfile" ]; then
+    echo "Usage: processOpts netbsd netbsd.9.2.opts.txt"
+    return 1
+  fi
+
+  while read -r line; do
+  if [ -z "$(echo "$line" | tr -d '# ' )" ]; then
+    continue
+  fi
+  if echo "$line" | grep "^#" >/dev/null ; then
+    continue
+  fi
+  echo $line
+  _text="$(echo "$line" | cut -d '|' -f 1   | xargs)"
+  _keys="$(echo "$line" | cut -d '|' -f 2- )"
+  echo "Text: $_text"
+  echo "Keys: $_keys"
+  waitForText "$_osname" "$_text"
+  input "$_osname" "$_keys"
+
+  sleep 1
+done <"$_optsfile"
+
+
+}
 
 
 #osname
