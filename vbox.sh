@@ -158,7 +158,10 @@ screenText() {
   fi
 
   _png="${_img:-$_osname.png}"
-  sudo vboxmanage controlvm $_osname screenshotpng  $_png
+  while ! sudo vboxmanage controlvm $_osname screenshotpng  $_png ; do
+    echo "screenText error, lets just wait"
+    sleep 3
+  done
   sudo chmod 666 $_png
   
   if [ -z "$_img" ]; then
@@ -315,7 +318,7 @@ startWeb() {
 </html>' >index.html
   fi
 
-  (while true; do ./vbox.sh screenText "$_osname" "screen.png"; done)&
+  (while true; do screenText "$_osname" "screen.png"; done)&
 
 }
 
