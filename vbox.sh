@@ -156,11 +156,27 @@ screenText() {
     return 1
   fi
 
-  _png="$_osname.scr.png"
+  _png="screen.png"
   sudo vboxmanage controlvm $_osname screenshotpng  $_png
   sudo chmod 666 $_png
   
-  pytesseract $_png
+  pytesseract $_png | tee screen.txt
+
+  echo '<!DOCTYPE html>
+<html>
+<head>
+<title>VMAction.org</title>
+<meta http-equiv="refresh" content="1">
+</head>
+<body>
+
+<img src="screen.png" alt="Screen">
+
+<br>
+<pre>
+' >index.html
+  cat screen.txt >>index.html
+  cat '</pre></body></html>'
 
 }
 
@@ -189,6 +205,82 @@ waitForText() {
   done
 
 }
+
+
+
+startCF() {
+  _http_port="$1"
+
+  if [ -z "$_http_port" ]; then
+    _http_port=8000
+    echo "Using default port 8000"
+  fi
+
+
+
+  NGROK_MAC="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-darwin-amd64.tgz"
+  NGROK_Linux="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64"
+  NGROK_Win="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
+    
+    
+
+
+  link="$NGROK_Win"
+
+  cloudflared="./cloudflared"
+
+  log="./cf.log"
+
+  protocol=http
+  port=$_http_port
+
+  if uname -a | grep -i "darwin"; then
+    link="$NGROK_MAC"
+    echo "Using link: $link"
+    wget -O cloudflared.tgz "$link"
+    tar xzf cloudflared.tgz
+    chmod +x cloudflared
+
+  elif uname -a | grep -i "linux"; then
+    link="$NGROK_Linux"
+    wget -O cloudflared "$link"
+    chmod +x cloudflared
+  else
+    link="$NGROK_Win"
+    echo "not implementd for Windows yet"
+    exit 1
+    cloudflared="$cloudflared.exe"
+  fi
+
+
+
+  if ! ${cloudflared} update; then 
+    echo ok;
+  fi
+
+
+  ${cloudflared} tunnel --url ${protocol}://localhost:${port} >${log} 2>&1 &
+
+
+  while ! grep "registered connIndex=" ${log}; do
+    echo "waiting for the tunnel"
+    sleep 2
+  done
+
+
+  domain="$(cat "${log}" | grep https:// | grep trycloudflare.com | head -1 | cut -d '|' -f 2 | tr -d ' ' | cut -d '/' -f 3)"
+
+
+  echo "please visit:  https://$domain"
+
+}
+
+
+startWeb() {
+  python3 -m http.server >/dev/null 2>&1 &
+
+}
+
 
 
 #keys splitted by ;
@@ -280,16 +372,6 @@ down() {
 }
 
 
-#osname
-key_g() {
-  _osname="${1:-$VM_OS_NAME}"
-  
-  if [ -z "$_osname" ]; then
-    echo "Usage: key_g netbsd"
-    return 1
-  fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 22 a2
-}
 
 
 
