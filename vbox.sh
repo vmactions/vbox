@@ -159,7 +159,7 @@ screenText() {
 
   _png="${_img:-$_osname.png}"
   while ! sudo vboxmanage controlvm $_osname screenshotpng  $_png ; do
-    echo "screenText error, lets just wait"
+    #echo "screenText error, lets just wait"
     sleep 3
   done
   sudo chmod 666 $_png
@@ -332,6 +332,8 @@ exportOVA() {
   fi
 
   sudo vboxmanage export $_osname --output "$_ova"
+
+  sudo chmod +r "$_ova"
 }
 
 
