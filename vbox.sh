@@ -350,6 +350,20 @@ StrictHostKeyChecking=accept-new
 }
 
 
+inputFile() {
+  _osname="$1"
+  _file="$2"
+
+  if [ -z "$_file" ]; then
+    echo "Usage: inputFile netbsd file.txt"
+    return 1
+  fi
+
+  sudo vboxmanage controlvm $_osname keyboardputfile  "$_file"
+
+}
+
+
 #keys splitted by ;
 #eg:  enter
 #eg:  down; enter
