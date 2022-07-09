@@ -109,7 +109,9 @@ clearVM() {
     return 1
   fi
 
-  sudo vboxmanage  controlvm $_osname poweroff
+  if ! sudo vboxmanage  controlvm $_osname poweroff; then
+    echo "The vm is not running"
+  fi
 
   sudo vboxmanage unregistervm $_osname --delete
 
