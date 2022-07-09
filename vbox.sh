@@ -64,7 +64,7 @@ startVM() {
     echo "Usage: startVM netbsd"
     return 1
   fi
-  sudo vboxmanage  startvm netbsd --type headless
+  sudo vboxmanage  startvm $_osname --type headless
 }
 
 
