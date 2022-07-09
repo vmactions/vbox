@@ -87,11 +87,16 @@ processOpts() {
   fi
   echo $line
   _text="$(echo "$line" | cut -d '|' -f 1   | xargs)"
-  _keys="$(echo "$line" | cut -d '|' -f 2- )"
+  _keys="$(echo "$line" | cut -d '|' -f 2 )"
+  _timeout="$(echo "$line" | cut -d '|' -f 3 )"
   echo "Text: $_text"
   echo "Keys: $_keys"
-  waitForText "$_osname" "$_text"
-  input "$_osname" "$_keys"
+
+  if waitForText "$_osname" "$_text" "$_timeout"; then
+    input "$_osname" "$_keys"
+  else
+    echo "Timeout for waiting for text: $_text"
+  fi
 
   sleep 1
 done <"$_optsfile"
@@ -213,11 +218,11 @@ waitForText() {
     echo "$_screenText"
     if echo "$_screenText" | grep -- "$_text" >/dev/null; then
       echo "OK, found."
-      break;
+      return 0
     fi
     _t=$((_t + 1))
   done
-
+  return 1 #timeout
 }
 
 
