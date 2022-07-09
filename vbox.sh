@@ -173,19 +173,19 @@ screenText() {
   else
     pytesseract $_png >screen.txt
 
-    echo '<!DOCTYPE html>
+    echo "<!DOCTYPE html>
 <html>
 <head>
-<title>VMActions.org</title>
-<meta http-equiv="refresh" content="1">
+<title>$_osname</title>
+<meta http-equiv='refresh' content='1'>
 </head>
-<body onclick="stop()">
+<body onclick='stop()'>
 
-<img src="screen.png" alt="Screen">
+<img src='screen.png' alt='Screen'>
 
 <br>
 <pre>
-' >index.html
+" >index.html
     cat screen.txt >>index.html
     echo '</pre></body></html>' >>index.html
 
@@ -308,18 +308,18 @@ startWeb() {
 
   python3 -m http.server >/dev/null 2>&1 &
   if ! [ -e "index.html" ]; then
-    echo '<!DOCTYPE html>
+    echo "<!DOCTYPE html>
 <html>
 <head>
-<title>VMActions.org</title>
-<meta http-equiv="refresh" content="1">
+<title>$_osname</title>
+<meta http-equiv='refresh' content='1'>
 </head>
 <body>
 
 <h1>Please just wait....<h1>
 
 </body>
-</html>' >index.html
+</html>" >index.html
   fi
 
   (while true; do screenText "$_osname" "screen.png"; done)&
