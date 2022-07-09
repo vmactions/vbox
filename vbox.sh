@@ -113,7 +113,9 @@ clearVM() {
     echo "The vm is not running"
   fi
 
-  sudo vboxmanage unregistervm $_osname --delete
+  if ! sudo vboxmanage unregistervm $_osname --delete ; then
+    echo "no delete"
+  fi
 
   sudo rm -fr ~/"VirtualBox VMs/$_osname"
 
