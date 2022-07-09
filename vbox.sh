@@ -315,7 +315,7 @@ startWeb() {
 </html>' >index.html
   fi
 
-  (while true; do screenText "$_osname" "screen.png"; done)&
+  (while true; do ./vbox.sh screenText "$_osname" "screen.png"; done)&
 
 }
 
