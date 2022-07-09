@@ -161,7 +161,7 @@ screenText() {
   sudo vboxmanage controlvm $_osname screenshotpng  $_png
   sudo chmod 666 $_png
   
-  if [ -z "$img" ]; then
+  if [ -z "$_img" ]; then
     pytesseract $_png
   else
     pytesseract $_png >screen.txt
@@ -242,16 +242,19 @@ startCF() {
   port=$_http_port
 
   if uname -a | grep -i "darwin"; then
-    link="$NGROK_MAC"
-    echo "Using link: $link"
-    wget -O cloudflared.tgz "$link"
-    tar xzf cloudflared.tgz
-    chmod +x cloudflared
-
+    if [ -e "$cloudflared" ]; then
+      link="$NGROK_MAC"
+      echo "Using link: $link"
+      wget -O cloudflared.tgz "$link"
+      tar xzf cloudflared.tgz
+      chmod +x cloudflared
+    fi
   elif uname -a | grep -i "linux"; then
-    link="$NGROK_Linux"
-    wget -O cloudflared "$link"
-    chmod +x cloudflared
+    if [ -e "$cloudflared" ]; then
+      link="$NGROK_Linux"
+      wget -O cloudflared "$link"
+      chmod +x cloudflared
+    fi
   else
     link="$NGROK_Win"
     echo "not implementd for Windows yet"
@@ -277,8 +280,13 @@ startCF() {
 
   domain="$(cat "${log}" | grep https:// | grep trycloudflare.com | head -1 | cut -d '|' -f 2 | tr -d ' ' | cut -d '/' -f 3)"
 
-
-  echo "please visit:  https://$domain"
+  echo "================================="
+  echo ""
+  echo ""
+  echo "Please visit:  https://$domain"
+  echo ""
+  echo ""
+  echo "================================="
 
 }
 
