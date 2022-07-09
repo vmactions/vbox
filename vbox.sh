@@ -184,7 +184,7 @@ screenText() {
 <title>$_osname</title>
 <meta http-equiv='refresh' content='1'>
 </head>
-<body onclick='stop()'>
+<body onclick='stop()' style='background-color:grey;'>
 
 <img src='screen.png' alt='Screen'>
 
@@ -319,7 +319,7 @@ startWeb() {
 <title>$_osname</title>
 <meta http-equiv='refresh' content='1'>
 </head>
-<body>
+<body style='background-color:grey;'>
 
 <h1>Please just wait....<h1>
 
