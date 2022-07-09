@@ -175,7 +175,7 @@ screenText() {
 <title>VMAction.org</title>
 <meta http-equiv="refresh" content="1">
 </head>
-<body>
+<body onclick="stop()">
 
 <img src="screen.png" alt="Screen">
 
