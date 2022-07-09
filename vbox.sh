@@ -147,22 +147,26 @@ detachISO() {
 }
 
 
-#osname
+#osname [img]
 screenText() {
   _osname="$1"
+  _img="$2"
   
   if [ -z "$_osname" ]; then
     echo "Usage: screenText netbsd"
     return 1
   fi
 
-  _png="screen.png"
+  _png="${_img:-$_osname.png}"
   sudo vboxmanage controlvm $_osname screenshotpng  $_png
   sudo chmod 666 $_png
   
-  pytesseract $_png | tee screen.txt
+  if [ -z "$img" ]; then
+    pytesseract $_png
+  else
+    pytesseract $_png >screen.txt
 
-  echo '<!DOCTYPE html>
+    echo '<!DOCTYPE html>
 <html>
 <head>
 <title>VMAction.org</title>
@@ -175,8 +179,11 @@ screenText() {
 <br>
 <pre>
 ' >index.html
-  cat screen.txt >>index.html
-  echo '</pre></body></html>' >>index.html
+    cat screen.txt >>index.html
+    echo '</pre></body></html>' >>index.html
+
+  fi
+
 
 }
 
@@ -277,6 +284,13 @@ startCF() {
 
 
 startWeb() {
+  _osname="$1"
+
+  if [ -z "$_osname" ]; then
+    echo "Usage: startWeb netbsd"
+    return 1
+  fi
+
   python3 -m http.server >/dev/null 2>&1 &
   if ! [ -e "index.html" ]; then
     echo '<!DOCTYPE html>
@@ -292,6 +306,8 @@ startWeb() {
 </body>
 </html>' >index.html
   fi
+
+  (while true; do screenText "$_osname" "screen.png"; done)&
 
 }
 
