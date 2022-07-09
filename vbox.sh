@@ -278,6 +278,20 @@ startCF() {
 
 startWeb() {
   python3 -m http.server >/dev/null 2>&1 &
+  if ! [ -e "index.html" ]; then
+    echo '<!DOCTYPE html>
+<html>
+<head>
+<title>VMAction.org</title>
+<meta http-equiv="refresh" content="1">
+</head>
+<body>
+
+<h1>Please just wait....<h1>
+
+</body>
+</html>' >index.html
+  fi
 
 }
 
