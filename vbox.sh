@@ -172,7 +172,7 @@ screenText() {
     echo '<!DOCTYPE html>
 <html>
 <head>
-<title>VMAction.org</title>
+<title>VMActions.org</title>
 <meta http-equiv="refresh" content="1">
 </head>
 <body onclick="stop()">
@@ -307,7 +307,7 @@ startWeb() {
     echo '<!DOCTYPE html>
 <html>
 <head>
-<title>VMAction.org</title>
+<title>VMActions.org</title>
 <meta http-equiv="refresh" content="1">
 </head>
 <body>
