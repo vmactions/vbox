@@ -242,7 +242,7 @@ startCF() {
   port=$_http_port
 
   if uname -a | grep -i "darwin"; then
-    if [ -e "$cloudflared" ]; then
+    if [ ! -e "$cloudflared" ]; then
       link="$NGROK_MAC"
       echo "Using link: $link"
       wget -O cloudflared.tgz "$link"
@@ -250,7 +250,7 @@ startCF() {
       chmod +x cloudflared
     fi
   elif uname -a | grep -i "linux"; then
-    if [ -e "$cloudflared" ]; then
+    if [ ! -e "$cloudflared" ]; then
       link="$NGROK_Linux"
       wget -O cloudflared "$link"
       chmod +x cloudflared
