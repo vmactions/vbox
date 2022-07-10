@@ -33,7 +33,8 @@ createVM() {
   _iso="$_osname.iso"
 
   if [ ! -e "$_iso" ]; then
-   wget -O $_iso "$_isolink"
+   echo "Downloading: $_isolink"
+   wget -q -O $_iso "$_isolink"
   fi
    
   sudo vboxmanage  createhd --filename $_vdi --size 100000
