@@ -378,10 +378,11 @@ Host $_osname
   User root
   Port $_port
   HostName localhost
-  " >>~/.ssh/config
+" >>~/.ssh/config
 
   if [ "$_idfile" ]; then
-    echo "  IdentityFile=$_idfile" >>~/.ssh/config
+    echo "  IdentityFile=$_idfile
+" >>~/.ssh/config
   fi
 
 
