@@ -55,6 +55,15 @@ createVM() {
 
 }
 
+#ova
+importVM() {
+  _ova="$1"
+  if [ -z "$_ova" ]; then
+    echo "Usage: importVM xxxx.ova"
+    return 1
+  fi
+  sudo vboxmanage  import  $_ova
+}
 
 #osname
 startVM() {
@@ -363,6 +372,7 @@ addSSHHost() {
 
   echo "
 StrictHostKeyChecking=accept-new
+SendEnv   CI  GITHUB_* 
 
 Host $_osname
   User root
@@ -374,6 +384,61 @@ Host $_osname
     echo "  IdentityFile=$_idfile" >>~/.ssh/config
   fi
 
+
+}
+
+
+#pbk
+addSSHAuthorizedKeys() {
+  _pbk="$1"
+  if [ -z "$_pbk" ]; then
+    echo "Usage: addSSHAuthorizedKeys id_rsa.pub"
+    return 1
+  fi
+  
+  cat "$_pbk" >> $HOME/.ssh/authorized_keys
+  
+  chmod 600 $HOME/.ssh/authorized_keys
+
+}
+
+
+#osname protocol hostPort vmPort
+addNAT() {
+  _osname="$1"
+  _proto="$2"
+  _hostPort="$3"
+  _vmPort="$4"
+  if [ -z "$_vmPort" ]; then
+    echo "Usage: addNAT osname protocol hostPort vmPort"
+    return 1
+  fi
+  sudo vboxmanage  modifyvm  "$_osname" --natpf1 "$_hostPort,$_proto,,$_hostPort,,$_vmPort"
+
+}
+
+
+#osname  memsize
+setMemory() {
+  _osname="$1"
+  _memsize="$2"
+  if [ -z "$_memsize" ]; then
+    echo "Usage: setMemory osname 2048"
+    return 1
+  fi
+  sudo vboxmanage  modifyvm  "$_osname"   --memory $_memsize
+
+}
+
+#osname  cpuCount
+setCPU() {
+  _osname="$1"
+  _cpuCount="$2"
+  if [ -z "$_cpuCount" ]; then
+    echo "Usage: setCPU osname 3"
+    return 1
+  fi
+  sudo vboxmanage  modifyvm  "$_osname"   --cpus "$_cpuCount"
 
 }
 
