@@ -348,10 +348,11 @@ exportOVA() {
 }
 
 
-#osname port 
+#osname port [idfile]
 addSSHHost() {
   _osname="$1"
   _port="$2"
+  _idfile="$3"
   if [ -z "$_port" ]; then
     echo "Usage: addSSHHost netbsd 2225"
     return 1
@@ -361,15 +362,17 @@ addSSHHost() {
   fi
 
   echo "
+StrictHostKeyChecking=accept-new
+
 Host $_osname
   User root
   Port $_port
   HostName localhost
-
-StrictHostKeyChecking=accept-new
-
-
   " >>~/.ssh/config
+
+  if [ "$_idfile" ]; then
+    echo "  IdentityFile=$_idfile" >>~/.ssh/config
+  fi
 
 
 }
