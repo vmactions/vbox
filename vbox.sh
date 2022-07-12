@@ -56,6 +56,42 @@ createVM() {
 
 }
 
+
+#osname  ostype sshport
+createVMFromVHD() {
+  _osname="$1"
+  _ostype="$2"
+  _sshport="$3"
+  
+  if [ -z "$_osname" ]; then
+    echo "Usage: createVMFromVHD  osname  ostype  sshport"
+    echo "Usage: createVMFromVHD  freebsd   FreeBSD_64  2222"
+    return 1
+  fi
+
+
+  _vhd="$_osname.vhd"
+
+
+  sudo vboxmanage  createvm  --name  $_osname --ostype  $_ostype  --default   --basefolder $_osname --register
+
+  sudo vboxmanage  storagectl  $_osname   --name SATA --add sata  --controller IntelAHCI
+
+  sudo vboxmanage  storageattach  $_osname   --storagectl SATA --port 0  --device 0  --type hdd --medium  $_vhd
+
+
+  sudo vboxmanage  modifyvm $_osname   --vrde on  --vrdeport 3390
+
+  sudo vboxmanage  modifyvm  $_osname  --natpf1 "guestssh,tcp,,$_sshport,,22"
+
+  sudo vboxmanage  modifyhd $_vhd   --resize  100000
+
+}
+
+
+
+
+
 #ova
 importVM() {
   _ova="$1"
