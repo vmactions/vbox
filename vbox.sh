@@ -305,14 +305,14 @@ startCF() {
     if [ ! -e "$cloudflared" ]; then
       link="$NGROK_MAC"
       echo "Using link: $link"
-      wget -O cloudflared.tgz "$link"
+      wget -q -O cloudflared.tgz "$link"
       tar xzf cloudflared.tgz
       chmod +x cloudflared
     fi
   elif uname -a | grep -i "linux"; then
     if [ ! -e "$cloudflared" ]; then
       link="$NGROK_Linux"
-      wget -O cloudflared "$link"
+      wget -q -O cloudflared "$link"
       chmod +x cloudflared
     fi
   else
