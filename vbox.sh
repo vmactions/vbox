@@ -9,7 +9,10 @@ set -e
 setup() {
   brew install tesseract
   pip3 install pytesseract
-
+  if [ "$DEBUG" ]; then
+    wget -O Oracle_VM_VirtualBox_Extension_Pack.vbox-extpack  https://download.virtualbox.org/virtualbox/6.1.34/Oracle_VM_VirtualBox_Extension_Pack-6.1.34.vbox-extpack
+    echo y | sudo vboxmanage extpack install    --replace Oracle_VM_VirtualBox_Extension_Pack.vbox-extpack
+  fi
 }
 
 
