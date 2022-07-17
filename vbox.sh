@@ -577,6 +577,19 @@ f2() {
   sudo vboxmanage controlvm $_osname keyboardputscancode 3c bc
 }
 
+#osname
+f7() {
+  _osname="${1:-$VM_OS_NAME}"
+  
+  if [ -z "$_osname" ]; then
+    echo "Usage: f7 netbsd"
+    return 1
+  fi
+  sudo vboxmanage controlvm $_osname keyboardputscancode 41 c1
+}
+
+
+
 
 #osname
 down() {
