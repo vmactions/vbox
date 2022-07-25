@@ -603,6 +603,16 @@ down() {
 }
 
 
+#osname
+up() {
+  _osname="${1:-$VM_OS_NAME}"
+
+  if [ -z "$_osname" ]; then
+    echo "Usage: up netbsd"
+    return 1
+  fi
+  sudo vboxmanage controlvm $_osname keyboardputscancode 48 c8
+}
 
 
 
