@@ -204,6 +204,19 @@ detachISO() {
 
 }
 
+attachISO() {
+  _osname="$1"
+  _iso="$2"
+  
+  if [ -z "$_iso" ]; then
+    echo "Usage: attachISO netbsd  netbsd.iso"
+    return 1
+  fi
+
+  sudo vboxmanage storageattach  $_osname  --storagectl IDE --port 0  --device 0  --type dvddrive  --medium "$_iso"
+
+}
+
 
 #osname [img]
 screenText() {
