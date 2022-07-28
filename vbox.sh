@@ -264,11 +264,12 @@ screenText() {
 }
 
 
-#osname text  [timeout secs]
+#osname text  [timeout secs] [hook]
 waitForText() {
   _osname="$1"
   _text="$2"
   _sec="$3"
+  _hook="$4"
 
   if [ -z "$_text" ]; then
     echo "Usage: waitForText netbsd text"
@@ -285,6 +286,7 @@ waitForText() {
       return 0
     fi
     _t=$((_t + 1))
+    $_hook
   done
   return 1 #timeout
 }
