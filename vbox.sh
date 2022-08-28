@@ -308,7 +308,9 @@ startCF() {
   NGROK_Win="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
     
     
-  killall cloudflared
+  if ! killall cloudflared; then
+    echo "ok"
+  fi
 
   link="$NGROK_Win"
 
