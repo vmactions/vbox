@@ -356,7 +356,7 @@ startCF() {
     echo ok;
   fi
 
-
+  rm -rf "$log"
   ${cloudflared} tunnel --url ${protocol}://localhost:${port} >${log} 2>&1 &
 
 
