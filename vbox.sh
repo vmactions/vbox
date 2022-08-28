@@ -171,7 +171,7 @@ clearVM() {
     echo "no delete"
   fi
 
-  sudo rm -fr ~/"VirtualBox VMs/$_osname"
+  sudo -i rm -fr "\$HOME/VirtualBox VMs/$_osname"
 
   rm ~/.ssh/known_hosts
 
@@ -308,7 +308,7 @@ startCF() {
   NGROK_Win="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
     
     
-
+  killall cloudflared
 
   link="$NGROK_Win"
 
