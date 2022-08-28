@@ -9,6 +9,14 @@ set -e
 setup() {
   brew install tesseract
   pip3 install pytesseract
+  echo "Reloading sshd services in the Host"
+  sudo sh <<EOF
+  echo "" >>/etc/ssh/sshd_config
+  echo "StrictModes no" >>/etc/ssh/sshd_config
+EOF
+  sudo launchctl unload /System/Library/LaunchDaemons/ssh.plist
+  sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist
+
   if [ "$DEBUG" ]; then
     wget -O Oracle_VM_VirtualBox_Extension_Pack.vbox-extpack  https://download.virtualbox.org/virtualbox/6.1.34/Oracle_VM_VirtualBox_Extension_Pack-6.1.34.vbox-extpack
     echo y | sudo vboxmanage extpack install    --replace Oracle_VM_VirtualBox_Extension_Pack.vbox-extpack
