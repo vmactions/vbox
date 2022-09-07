@@ -18,7 +18,9 @@ EOF
   sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist
 
   if [ "$DEBUG" ]; then
-    wget -O Oracle_VM_VirtualBox_Extension_Pack.vbox-extpack  https://download.virtualbox.org/virtualbox/6.1.34/Oracle_VM_VirtualBox_Extension_Pack-6.1.34.vbox-extpack
+    _vboxmangeVersion="$(vboxmanage -v | cut -d 'r' -f 1)"
+    echo $_vboxmangeVersion
+    wget -O Oracle_VM_VirtualBox_Extension_Pack.vbox-extpack  https://download.virtualbox.org/virtualbox/$_vboxmangeVersion/Oracle_VM_VirtualBox_Extension_Pack-${_vboxmangeVersion}.vbox-extpack
     echo y | sudo vboxmanage extpack install    --replace Oracle_VM_VirtualBox_Extension_Pack.vbox-extpack
   fi
 }
