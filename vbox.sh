@@ -8,7 +8,7 @@ set -e
 
 setup() {
   brew install tesseract
-  pip3 install pytesseract
+  pip3 install pytesseract opencv-python
   echo "Reloading sshd services in the Host"
   sudo sh <<EOF
   echo "" >>/etc/ssh/sshd_config
