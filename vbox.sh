@@ -8,7 +8,7 @@ set -e
 
 setup() {
   brew install tesseract
-  pip3 install pytesseract opencv-python
+  pip3 install pytesseract
   echo "Reloading sshd services in the Host"
   sudo sh <<EOF
   echo "" >>/etc/ssh/sshd_config
@@ -227,26 +227,6 @@ attachISO() {
 
 }
 
-#img
-_ocr() {
-  _ocr_img="$1"
-#  pytesseract $_ocr_img
-  python3 -c "
-import cv2,pytesseract,numpy,sys;
-img = cv2.imread(sys.argv[1]);
-gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY);
-gray, img_bin = cv2.threshold(gray,128,255,cv2.THRESH_BINARY | cv2.THRESH_OTSU);
-gray = cv2.bitwise_not(img_bin);
-kernel = numpy.ones((2, 1), numpy.uint8);
-img = cv2.erode(gray, kernel, iterations=1);
-img = cv2.dilate(img, kernel, iterations=1);
-out_below = pytesseract.image_to_string(img);
-print(out_below);
-
-"  "$_ocr_img"
-
-}
-
 
 #osname [img]
 screenText() {
@@ -268,9 +248,9 @@ screenText() {
   mv temp.$_png  $_png
 
   if [ -z "$_img" ]; then
-    _ocr $_png
+    pytesseract $_png
   else
-    _ocr $_png >screen.txt
+    pytesseract $_png >screen.txt
 
     echo "<!DOCTYPE html>
 <html>
