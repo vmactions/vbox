@@ -439,7 +439,7 @@ addSSHHost() {
 
   echo "
 StrictHostKeyChecking=accept-new
-SendEnv   CI  GITHUB_* 
+SendEnv   CI  GITHUB_* VM*
 
 Host $_osname
   User root
