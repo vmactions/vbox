@@ -4,7 +4,7 @@ set -e
 
 
 
-
+export PATH=$PATH:/Library/Frameworks/Python.framework/Versions/Current/bin
 
 setup() {
   brew install tesseract
