@@ -304,9 +304,9 @@ startCF() {
 
 
 
-  NGROK_MAC="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-darwin-amd64.tgz"
-  NGROK_Linux="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64"
-  NGROK_Win="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
+  NGROK_MAC="https://github.com/cloudflare/cloudflared/releases/download/2022.11.1/cloudflared-darwin-amd64.tgz"
+  NGROK_Linux="https://github.com/cloudflare/cloudflared/releases/download/2022.11.1/cloudflared-linux-amd64"
+  NGROK_Win="https://github.com/cloudflare/cloudflared/releases/download/2022.11.1/cloudflared-windows-amd64.exe"
     
     
 
@@ -351,7 +351,7 @@ startCF() {
   ${cloudflared} tunnel --url ${protocol}://localhost:${port} >${log} 2>&1 &
 
 
-  while ! grep "registered connIndex=" ${log}; do
+  while ! grep "connIndex=0" ${log}; do
     echo "waiting for the tunnel"
     cat ${log}
     sleep 2
