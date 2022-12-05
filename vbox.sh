@@ -353,6 +353,7 @@ startCF() {
 
   while ! grep "registered connIndex=" ${log}; do
     echo "waiting for the tunnel"
+    cat ${log}
     sleep 2
   done
 
