@@ -57,6 +57,7 @@ createVM() {
 
   sudo vboxmanage  modifyvm  $_osname  --natpf1 "guestssh,tcp,,$_sshport,,22"
 
+  setCPU "$_osname" 2
 }
 
 
