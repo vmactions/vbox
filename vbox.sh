@@ -48,6 +48,10 @@ createVM() {
   if [ ! -e "$_iso" ]; then
    echo "Downloading: $_isolink"
    wget -q -O $_iso "$_isolink"
+   if echo "$_isolink" | grep 'bz2$'; then
+     mv "$_iso" "$_iso.bz2"
+     bzip2 -dc "$_iso.bz2" >"$_iso"
+   fi
   fi
    
   sudo vboxmanage  createhd --filename $_vdi --size 100000
