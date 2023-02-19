@@ -9,8 +9,18 @@ export PATH=$PATH:/Library/Frameworks/Python.framework/Versions/Current/bin
 setup() {
   brew install tesseract
   pip3 install pytesseract
+  echo "Reloading sshd services in the Host"
+  sudo sh <<EOF
+  echo "" >>/etc/ssh/sshd_config
+  echo "StrictModes no" >>/etc/ssh/sshd_config
+EOF
+  sudo launchctl unload /System/Library/LaunchDaemons/ssh.plist
+  sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist
+
   if [ "$DEBUG" ]; then
-    wget -O Oracle_VM_VirtualBox_Extension_Pack.vbox-extpack  https://download.virtualbox.org/virtualbox/6.1.34/Oracle_VM_VirtualBox_Extension_Pack-6.1.34.vbox-extpack
+    _vboxmangeVersion="$(vboxmanage -v | cut -d 'r' -f 1)"
+    echo $_vboxmangeVersion
+    wget -O Oracle_VM_VirtualBox_Extension_Pack.vbox-extpack  https://download.virtualbox.org/virtualbox/$_vboxmangeVersion/Oracle_VM_VirtualBox_Extension_Pack-${_vboxmangeVersion}.vbox-extpack
     echo y | sudo vboxmanage extpack install    --replace Oracle_VM_VirtualBox_Extension_Pack.vbox-extpack
   fi
 }
