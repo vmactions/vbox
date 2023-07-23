@@ -543,7 +543,7 @@ uploadFile() {
   string  "cat - >$_remote"
   input "$_osname" "enter"
   inputFile "$_osname"  "$_local"
-  ctrlC
+  ctrlD
 
 }
 
@@ -668,16 +668,26 @@ up() {
 
 
 #osname
-ctrlC() {
+#ctrlC() {
+#  _osname="${1:-$VM_OS_NAME}"
+#
+#  if [ -z "$_osname" ]; then
+#    echo "Usage: up netbsd"
+#    return 1
+#  fi
+#  sudo vboxmanage controlvm $_osname keyboardputscancode 1d 2e ae 9d
+#}
+
+#osname
+ctrlD() {
   _osname="${1:-$VM_OS_NAME}"
 
   if [ -z "$_osname" ]; then
     echo "Usage: up netbsd"
     return 1
   fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 1d 2e ae 9d
+  sudo vboxmanage controlvm $_osname keyboardputscancode 1d 20 a0 9d
 }
-
 
 "$@"
 
