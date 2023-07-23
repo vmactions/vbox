@@ -514,7 +514,7 @@ setCPU() {
 
 }
 
-
+# input the file as shell script to execute
 inputFile() {
   _osname="$1"
   _file="$2"
@@ -527,6 +527,26 @@ inputFile() {
   sudo vboxmanage controlvm $_osname keyboardputfile  "$_file"
 
 }
+
+
+#upload a local file into the remote VM
+#osname  local  remote
+uploadFile() {
+  _osname="$1"
+  _local="$2" #local file in the host machine.
+  _remote="$3" #remote file in the VM
+  if [ -z "$_osname" ]; then
+    echo "Usage: uploadFile openbsd local remote"
+    return 1
+  fi
+  export VM_OS_NAME=$_osname
+  string  "cat - >$_remote"
+  input "$_osname" "enter"
+  inputFile "$_osname"  "$_local"
+  ctrlC
+
+}
+
 
 
 #keys splitted by ;
@@ -647,6 +667,16 @@ up() {
 
 
 
+#osname
+ctrlC() {
+  _osname="${1:-$VM_OS_NAME}"
+
+  if [ -z "$_osname" ]; then
+    echo "Usage: up netbsd"
+    return 1
+  fi
+  sudo vboxmanage controlvm $_osname keyboardputscancode 1d 2e ae 9d
+}
 
 
 "$@"
