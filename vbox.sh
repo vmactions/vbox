@@ -6,22 +6,36 @@ set -e
 
 export PATH=$PATH:/Library/Frameworks/Python.framework/Versions/Current/bin
 
-setup() {
-  brew install tesseract
-  pip3 install pytesseract
-  echo "Reloading sshd services in the Host"
-  sudo sh <<EOF
-  echo "" >>/etc/ssh/sshd_config
-  echo "StrictModes no" >>/etc/ssh/sshd_config
-EOF
-  sudo launchctl unload /System/Library/LaunchDaemons/ssh.plist
-  sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist
 
-  if [ "$DEBUG" ]; then
-    _vboxmangeVersion="$(vboxmanage -v | cut -d 'r' -f 1)"
-    echo $_vboxmangeVersion
-    wget -O Oracle_VM_VirtualBox_Extension_Pack.vbox-extpack  https://download.virtualbox.org/virtualbox/$_vboxmangeVersion/Oracle_VM_VirtualBox_Extension_Pack-${_vboxmangeVersion}.vbox-extpack
-    echo y | sudo vboxmanage extpack install    --replace Oracle_VM_VirtualBox_Extension_Pack.vbox-extpack
+
+
+isLinux() {
+  uname -a | grep -i "Linux" >/dev/null
+}
+
+
+
+
+
+setup() {
+  if isLinux; then
+    sudo apt-get update
+    sudo apt-get install   -y    libvirt-daemon-system   virt-manager qemu-kvm  libosinfo-bin
+
+    sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn
+    pip3 install pytesseract
+
+  else
+    brew install tesseract
+    pip3 install pytesseract
+    echo "Reloading sshd services in the Host"
+    sudo sh <<EOF
+    echo "" >>/etc/ssh/sshd_config
+    echo "StrictModes no" >>/etc/ssh/sshd_config
+EOF
+    sudo launchctl unload /System/Library/LaunchDaemons/ssh.plist
+    sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist
+
   fi
 }
 
@@ -83,26 +97,25 @@ createVMFromVHD() {
   
   if [ -z "$_osname" ]; then
     echo "Usage: createVMFromVHD  osname  ostype  sshport"
-    echo "Usage: createVMFromVHD  freebsd   FreeBSD_64  2222"
+    echo "Usage: createVMFromVHD  freebsd   freebsd13.1  2222"
     return 1
   fi
 
 
-  _vhd="$_osname.vhd"
+  _vhd="$_osname.qcow2"
 
+  sudo qemu-img resize $_vhd  +200G
 
-  sudo vboxmanage  createvm  --name  $_osname --ostype  $_ostype  --default   --basefolder $_osname --register
+  sudo virt-install \
+  --name $_osname \
+  --memory 4096 \
+  --vcpus 2 \
+  --disk $_vhd,format=qcow2,bus=virtio \
+  --os-variant=$_ostype \
+  --network network=default,model=virtio \
+  --graphics vnc,listen=0.0.0.0 \
+  --noautoconsole  --import
 
-  sudo vboxmanage  storagectl  $_osname   --name SATA --add sata  --controller IntelAHCI
-
-  sudo vboxmanage  storageattach  $_osname   --storagectl SATA --port 0  --device 0  --type hdd --medium  $_vhd
-
-
-  sudo vboxmanage  modifyvm $_osname   --vrde on  --vrdeport 3390
-
-  sudo vboxmanage  modifyvm  $_osname  --natpf1 "guestssh,tcp,,$_sshport,,22"
-
-  sudo vboxmanage  modifyhd $_vhd   --resize  100000
 
 }
 
@@ -177,16 +190,11 @@ clearVM() {
     echo "Usage: clearVM netbsd"
     return 1
   fi
-
-  if ! sudo vboxmanage  controlvm $_osname poweroff; then
-    echo "The vm is not running"
+  if sudo virsh list | grep $_osname; then
+    sudo virsh  shutdown $_osname
+    sudo virsh  destroy $_osname
+    sudo virsh  undefine $_osname
   fi
-
-  if ! sudo vboxmanage unregistervm $_osname --delete ; then
-    echo "no delete"
-  fi
-
-  sudo rm -fr ~/"VirtualBox VMs/$_osname"
 
   rm ~/.ssh/known_hosts
 
