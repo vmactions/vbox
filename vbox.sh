@@ -431,24 +431,24 @@ exportOVA() {
     return 1
   fi
 
-  sudo vboxmanage export $_osname --output "$_ova"
+  _sor="$(sudo virsh domblklist freebsd | grep -E -o '/.*qcow2')"
+
+  sudo cp  $_sor "$_ova"
 
   sudo chmod +r "$_ova"
 }
 
 
-#osname port [idfile]
+#osname [_idfile]
 addSSHHost() {
   _osname="$1"
-  _port="$2"
-  _idfile="$3"
-  if [ -z "$_port" ]; then
-    echo "Usage: addSSHHost netbsd 2225"
-    return 1
-  fi
+  _idfile="$2"
+
   if [ ! -e ~/.ssh/id_rsa ] ; then 
     ssh-keygen -f  ~/.ssh/id_rsa -q -N "" 
   fi
+
+  _ip="$(getVMIP $_osname)"
 
   echo "
 StrictHostKeyChecking=accept-new
@@ -456,8 +456,7 @@ SendEnv   CI  GITHUB_*
 
 Host $_osname
   User root
-  Port $_port
-  HostName localhost
+  HostName $_ip
 " >>~/.ssh/config
 
   if [ "$_idfile" ]; then
@@ -522,6 +521,15 @@ setCPU() {
   sudo vboxmanage  modifyvm  "$_osname"   --cpus "$_cpuCount"
 
 }
+
+
+#osname
+getVMIP() {
+  sudo virsh net-dhcp-leases default | grep  -o -E '192.168.[0-9]*.[0-9]*'
+}
+
+
+
 
 # input the file as shell script to execute
 inputFile() {
