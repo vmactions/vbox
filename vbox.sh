@@ -37,6 +37,7 @@ EOF
     sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist
 
   fi
+  sudo chmod o+rx $HOME
 }
 
 
