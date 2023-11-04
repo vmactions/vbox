@@ -427,7 +427,7 @@ exportOVA() {
   _osname="$1"
   _ova="$2"
   if [ -z "$_ova" ]; then
-    echo "Usage: exportOVA netbsd netbsd.9.2.ova"
+    echo "Usage: exportOVA netbsd netbsd.9.2.qcow2"
     return 1
   fi
 
