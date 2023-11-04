@@ -22,8 +22,8 @@ setup() {
     sudo apt-get update
     sudo apt-get install   -y    libvirt-daemon-system   virt-manager qemu-kvm  libosinfo-bin
 
-    sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn
-    pip3 install pytesseract
+    sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn  python3-pip
+    pip3 install pytesseract vncdotool
 
   else
     brew install tesseract
@@ -116,6 +116,7 @@ createVMFromVHD() {
   --graphics vnc,listen=0.0.0.0 \
   --noautoconsole  --import
 
+  sudo virsh  shutdown $_osname
 
 }
 
@@ -141,7 +142,7 @@ startVM() {
     echo "Usage: startVM netbsd"
     return 1
   fi
-  sudo vboxmanage  startvm $_osname --type headless
+  sudo virsh  start  $_osname 
 }
 
 
@@ -193,7 +194,7 @@ clearVM() {
   if sudo virsh list | grep $_osname; then
     sudo virsh  shutdown $_osname
     sudo virsh  destroy $_osname
-    sudo virsh  undefine $_osname
+    sudo virsh  undefine $_osname  --remove-all-storage
   fi
 
   rm ~/.ssh/known_hosts
@@ -209,7 +210,7 @@ shutdownVM() {
     return 1
   fi
 
-  sudo vboxmanage  controlvm $_osname poweroff soft
+  sudo virsh  shutdown  $_osname
   sleep 2
 }
 
@@ -252,7 +253,7 @@ screenText() {
   fi
 
   _png="${_img:-$_osname.png}"
-  while ! sudo vboxmanage controlvm $_osname screenshotpng  temp.$_png  >/dev/null 2>&1; do
+  while ! vncdotool capture  temp.$_png  >/dev/null 2>&1; do
     #echo "screenText error, lets just wait"
     sleep 3
   done
@@ -532,7 +533,10 @@ inputFile() {
     return 1
   fi
 
-  sudo vboxmanage controlvm $_osname keyboardputfile  "$_file"
+while IFS= read -r line; do
+  vncdotool type "$line"
+  vncdotool key enter
+done < "$_file"
 
 }
 
@@ -588,7 +592,7 @@ string() {
     return 1
   fi
   
-  sudo vboxmanage controlvm $_osname  keyboardputstring  "$1"
+  vncdotool  type "$1"
 }
 
 
@@ -610,7 +614,7 @@ enter() {
     echo "Usage: enter netbsd"
     return 1
   fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 1c 9c
+  vncdotool key enter
 }
 
 
@@ -622,7 +626,7 @@ tab() {
     echo "Usage: tab netbsd"
     return 1
   fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 0f 8f
+  vncdotool key tab
 }
 
 #osname
@@ -633,7 +637,7 @@ f2() {
     echo "Usage: f2 netbsd"
     return 1
   fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 3c bc
+  vncdotool key F2
 }
 
 #osname
@@ -644,7 +648,7 @@ f7() {
     echo "Usage: f7 netbsd"
     return 1
   fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 41 c1
+  vncdotool key F7
 }
 
 
@@ -658,7 +662,7 @@ down() {
     echo "Usage: down netbsd"
     return 1
   fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 50 d0
+  vncdotool key Down
 }
 
 
@@ -670,7 +674,7 @@ up() {
     echo "Usage: up netbsd"
     return 1
   fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 48 c8
+  vncdotool key Up
 }
 
 
@@ -694,7 +698,7 @@ ctrlD() {
     echo "Usage: up netbsd"
     return 1
   fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 1d 20 a0 9d
+  vncdotool key ctrl-d
 }
 
 "$@"
