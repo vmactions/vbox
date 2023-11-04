@@ -117,6 +117,7 @@ createVMFromVHD() {
   --noautoconsole  --import
 
   sudo virsh  shutdown $_osname
+  sudo virsh  destroy $_osname
 
 }
 
