@@ -128,17 +128,19 @@ createVMFromVHD() {
 
 #ova
 importVM() {
-  _ova="$1"
+  _osname="$1"
+  _ostype="$2"
+  _ova="$3"
   if [ -z "$_ova" ]; then
     echo "Usage: importVM xxxx.ova"
     return 1
   fi
   sudo virt-install \
-  --name $VM_OS_NAME \
+  --name $_osname \
   --memory 4096 \
   --vcpus 2 \
   --disk $_ova,format=qcow2,bus=virtio \
-  --os-variant=$VM_OS_TYPE \
+  --os-variant=$_ostype \
   --network network=default,model=virtio \
   --graphics vnc,listen=0.0.0.0 \
   --noautoconsole  --import
