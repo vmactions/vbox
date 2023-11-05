@@ -133,7 +133,17 @@ importVM() {
     echo "Usage: importVM xxxx.ova"
     return 1
   fi
-  sudo vboxmanage  import  $_ova
+  sudo virt-install \
+  --name $VM_OS_NAME \
+  --memory 4096 \
+  --vcpus 2 \
+  --disk $_ova,format=qcow2,bus=virtio \
+  --os-variant=$VM_OS_TYPE \
+  --network network=default,model=virtio \
+  --graphics vnc,listen=0.0.0.0 \
+  --noautoconsole  --import
+
+  sudo virsh  shutdown $_osname
 }
 
 #osname
