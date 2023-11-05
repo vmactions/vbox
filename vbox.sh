@@ -438,7 +438,7 @@ exportOVA() {
 
   sudo cp  $_sor "$_ova"
 
-  xz -z "$_ova" -k -T 0
+  sudo xz -z "$_ova" -k -T 0
 
   sudo chmod +r "$_ova.xz"
 }
