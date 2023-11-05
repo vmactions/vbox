@@ -143,7 +143,7 @@ importVM() {
   --os-variant=$_ostype \
   --network network=default,model=virtio \
   --graphics vnc,listen=0.0.0.0 \
-  --noautoconsole  --import
+  --noautoconsole  --import  --check all=off
 
   sudo virsh  shutdown $_osname
 }
