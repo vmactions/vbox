@@ -542,7 +542,7 @@ inputFile() {
     echo "Usage: inputFile netbsd file.txt"
     return 1
   fi
-  vncdotool --force-caps typefile "$_file"
+  vncdotool --force-caps  --delay=100  typefile "$_file"
 
 }
 
