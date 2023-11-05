@@ -375,6 +375,7 @@ startCF() {
 
   ${cloudflared} tunnel --url ${protocol}://localhost:${port} >${log} 2>&1 &
 
+  sleep 10
 
   while ! grep "connIndex=0" ${log}; do
     echo "waiting for the tunnel"
