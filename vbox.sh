@@ -433,7 +433,7 @@ exportOVA() {
     return 1
   fi
 
-  _sor="$(sudo virsh domblklist freebsd | grep -E -o '/.*qcow2')"
+  _sor="$(sudo virsh domblklist $_osname | grep -E -o '/.*qcow2')"
 
   sudo cp  $_sor "$_ova"
 
