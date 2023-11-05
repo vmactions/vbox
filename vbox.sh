@@ -542,11 +542,7 @@ inputFile() {
     echo "Usage: inputFile netbsd file.txt"
     return 1
   fi
-
-while IFS= read -r line; do
-  vncdotool type "$line"
-  vncdotool key enter
-done < "$_file"
+  vncdotool --force-caps typefile "$_file"
 
 }
 
