@@ -14,6 +14,10 @@ isLinux() {
 }
 
 
+_SUDO_VIR_=""
+if isLinux; then
+  _SUDO_VIR_=sudo
+fi
 
 
 
@@ -26,7 +30,8 @@ setup() {
     pip3 install pytesseract vncdotool
 
   else
-    brew install tesseract
+    brew install tesseract libvirt qemu  virt-manager
+    brew services start libvirt
     pip3 install pytesseract
     echo "Reloading sshd services in the Host"
     sudo sh <<EOF
@@ -109,7 +114,7 @@ createVMFromVHD() {
 
   sudo qemu-img resize $_vhd  +200G
 
-  sudo virt-install \
+  $_SUDO_VIR_ virt-install \
   --name $_osname \
   --memory 4096 \
   --vcpus 2 \
@@ -119,8 +124,8 @@ createVMFromVHD() {
   --graphics vnc,listen=0.0.0.0 \
   --noautoconsole  --import
 
-  sudo virsh  shutdown $_osname
-  sudo virsh  destroy $_osname
+  $_SUDO_VIR_  virsh  shutdown $_osname
+  $_SUDO_VIR_  virsh  destroy $_osname
 
 }
 
@@ -137,7 +142,7 @@ importVM() {
     echo "Usage: importVM xxxx.ova"
     return 1
   fi
-  sudo virt-install \
+  $_SUDO_VIR_  virt-install \
   --name $_osname \
   --memory 4096 \
   --vcpus 2 \
@@ -147,7 +152,7 @@ importVM() {
   --graphics vnc,listen=0.0.0.0 \
   --noautoconsole  --import  --check all=off
 
-  sudo virsh  shutdown $_osname
+  $_SUDO_VIR_  virsh  shutdown $_osname
 }
 
 #osname
@@ -158,7 +163,7 @@ startVM() {
     echo "Usage: startVM netbsd"
     return 1
   fi
-  sudo virsh  start  $_osname 
+  $_SUDO_VIR_  virsh  start  $_osname 
 }
 
 
@@ -207,10 +212,10 @@ clearVM() {
     echo "Usage: clearVM netbsd"
     return 1
   fi
-  if sudo virsh list | grep $_osname; then
-    sudo virsh  shutdown $_osname
-    sudo virsh  destroy $_osname
-    sudo virsh  undefine $_osname  --remove-all-storage
+  if $_SUDO_VIR_  virsh list | grep $_osname; then
+    $_SUDO_VIR_  virsh  shutdown $_osname
+    $_SUDO_VIR_  virsh  destroy $_osname
+    $_SUDO_VIR_  virsh  undefine $_osname  --remove-all-storage
   fi
 
   rm ~/.ssh/known_hosts
@@ -226,7 +231,7 @@ shutdownVM() {
     return 1
   fi
 
-  sudo virsh  shutdown  $_osname
+  $_SUDO_VIR_  virsh  shutdown  $_osname
   sleep 2
 }
 
@@ -369,7 +374,7 @@ exportOVA() {
     return 1
   fi
 
-  _sor="$(sudo virsh domblklist $_osname | grep -E -o '/.*qcow2')"
+  _sor="$($_SUDO_VIR_  virsh domblklist $_osname | grep -E -o '/.*qcow2')"
 
   sudo cp  $_sor "$_ova"
 
@@ -465,7 +470,7 @@ setCPU() {
 
 #osname
 getVMIP() {
-  sudo virsh net-dhcp-leases default | grep  -o -E '192.168.[0-9]*.[0-9]*'
+  $_SUDO_VIR_  virsh net-dhcp-leases default | grep  -o -E '192.168.[0-9]*.[0-9]*'
 }
 
 
