@@ -153,6 +153,7 @@ importVM() {
   --noautoconsole  --import  --check all=off
 
   $_SUDO_VIR_  virsh  shutdown $_osname
+  $_SUDO_VIR_  virsh  destroy $_osname
 }
 
 #osname
