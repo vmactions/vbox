@@ -32,6 +32,11 @@ setup() {
   else
     brew install tesseract libvirt qemu  virt-manager axel
     brew services start libvirt
+
+	virsh net-define --file /usr/local/etc/libvirt/qemu/networks/default.xml
+    virsh net-autostart default
+    virsh net-start default
+
     pip3 install pytesseract
     echo "Reloading sshd services in the Host"
     sudo sh <<EOF
@@ -70,6 +75,7 @@ createVM() {
   if [ ! -e "$_iso" ]; then
    echo "Downloading: $_isolink"
    axel -n 8 -o $_iso "$_isolink"
+   echo "Download finished"
    if echo "$_isolink" | grep 'bz2$'; then
      mv "$_iso" "$_iso.bz2"
      bzip2 -dc "$_iso.bz2" >"$_iso"
