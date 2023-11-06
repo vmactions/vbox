@@ -24,13 +24,13 @@ fi
 setup() {
   if isLinux; then
     sudo apt-get update
-    sudo apt-get install   -y    libvirt-daemon-system   virt-manager qemu-kvm  libosinfo-bin
+    sudo apt-get install   -y    libvirt-daemon-system   virt-manager qemu-kvm  libosinfo-bin  axel
 
     sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn  python3-pip
     pip3 install pytesseract vncdotool
 
   else
-    brew install tesseract libvirt qemu  virt-manager
+    brew install tesseract libvirt qemu  virt-manager axel
     brew services start libvirt
     pip3 install pytesseract
     echo "Reloading sshd services in the Host"
@@ -69,7 +69,7 @@ createVM() {
 
   if [ ! -e "$_iso" ]; then
    echo "Downloading: $_isolink"
-   wget -q -O $_iso "$_isolink"
+   axel -n 8 -o $_iso "$_isolink"
    if echo "$_isolink" | grep 'bz2$'; then
      mv "$_iso" "$_iso.bz2"
      bzip2 -dc "$_iso.bz2" >"$_iso"
