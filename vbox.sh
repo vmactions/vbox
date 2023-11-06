@@ -245,7 +245,7 @@ detachISO() {
     return 1
   fi
   
-  sudo vboxmanage storageattach  $_osname  --storagectl IDE --port 0  --device 0  --type dvddrive  --medium none
+  echo "detachISO  not implemented"
 
 }
 
@@ -258,7 +258,7 @@ attachISO() {
     return 1
   fi
 
-  sudo vboxmanage storageattach  $_osname  --storagectl IDE --port 0  --device 0  --type dvddrive  --medium "$_iso"
+  echo "attachISO  not implemented"
 
 }
 
@@ -438,7 +438,7 @@ addNAT() {
     echo "Usage: addNAT osname protocol hostPort vmPort"
     return 1
   fi
-  sudo vboxmanage  modifyvm  "$_osname" --natpf1 "$_hostPort,$_proto,,$_hostPort,,$_vmPort"
+  echo "addNAT  not implemented"
 
 }
 
@@ -451,7 +451,7 @@ setMemory() {
     echo "Usage: setMemory osname 2048"
     return 1
   fi
-  sudo vboxmanage  modifyvm  "$_osname"   --memory $_memsize
+  echo "setMemory  not implemented"
 
 }
 
@@ -463,7 +463,7 @@ setCPU() {
     echo "Usage: setCPU osname 3"
     return 1
   fi
-  sudo vboxmanage  modifyvm  "$_osname"   --cpus "$_cpuCount"
+  echo "setCPU  not implemented"
 
 }
 
@@ -627,17 +627,6 @@ up() {
 }
 
 
-
-#osname
-#ctrlC() {
-#  _osname="${1:-$VM_OS_NAME}"
-#
-#  if [ -z "$_osname" ]; then
-#    echo "Usage: up netbsd"
-#    return 1
-#  fi
-#  sudo vboxmanage controlvm $_osname keyboardputscancode 1d 2e ae 9d
-#}
 
 #osname
 ctrlD() {
