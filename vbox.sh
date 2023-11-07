@@ -200,6 +200,7 @@ processOpts() {
   echo "========> Keys:    $_keys"
   echo "========> Timeout: $_keys"
   if waitForText "$_osname" "$_text" "$_timeout"; then
+  echo "Input keys: $_keys"
     input "$_osname" "$_keys"
   else
     echo "Timeout for waiting for text: $_text"
@@ -552,14 +553,6 @@ string() {
   vncdotool  type "$1"
 }
 
-
-#https://www.win.tue.nl/~aeb/linux/kbd/scancodes-1.html
-
-#press down  up :   scancode   (0x80|scancode)
-#example:
-#  enter scancode=0x1c
-#  enter  down = 0x1c
-#  enter  up   = 0x9c
 
 
 
