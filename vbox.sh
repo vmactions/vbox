@@ -185,7 +185,7 @@ processOpts() {
     return 1
   fi
 
-  while read -r line; do
+while read -r line; do
   if [ -z "$(echo "$line" | tr -d '# ' )" ]; then
     continue
   fi
@@ -200,7 +200,7 @@ processOpts() {
   echo "========> Keys:    $_keys"
   echo "========> Timeout: $_keys"
   if waitForText "$_osname" "$_text" "$_timeout"; then
-  echo "Input keys: $_keys"
+    echo "Input keys: $_keys"
     input "$_osname" "$_keys"
   else
     echo "Timeout for waiting for text: $_text"
@@ -587,7 +587,7 @@ f2() {
     echo "Usage: f2 netbsd"
     return 1
   fi
-  vncdotool key F2
+  vncdotool key f2
 }
 
 #osname
@@ -598,7 +598,7 @@ f7() {
     echo "Usage: f7 netbsd"
     return 1
   fi
-  vncdotool key F7
+  vncdotool key f7
 }
 
 
@@ -612,7 +612,7 @@ down() {
     echo "Usage: down netbsd"
     return 1
   fi
-  vncdotool key Down
+  vncdotool key down
 }
 
 
@@ -624,7 +624,7 @@ up() {
     echo "Usage: up netbsd"
     return 1
   fi
-  vncdotool key Up
+  vncdotool key up
 }
 
 
