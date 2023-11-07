@@ -91,7 +91,7 @@ createVM() {
   --name $_osname \
   --memory 4096 \
   --vcpus 2 \
-  --disk path=$_vdi,size=200,format=qcow2 \
+  --disk path=$_vdi,size=200,format=qcow2,sparse=true \
   --cdrom $_iso \
   --os-variant=$_ostype \
   --network network=default,model=virtio \
