@@ -76,37 +76,29 @@ createVM() {
     return 1
   fi
 
-  _vdi="$_osname.vdi"
+  _vdi="$_osname.qcow2"
   _iso="$_osname.iso"
 
   if [ ! -e "$_iso" ]; then
-   echo "Downloading: $_isolink"
-   axel -n 8 -o $_iso "$_isolink"
-   echo "Download finished"
+   download "$_isolink" $_iso 
    if echo "$_isolink" | grep 'bz2$'; then
      mv "$_iso" "$_iso.bz2"
      bzip2 -dc "$_iso.bz2" >"$_iso"
    fi
   fi
-   
-  sudo vboxmanage  createhd --filename $_vdi --size 100000
+  
+  $_SUDO_VIR_ virt-install \
+  --name $_osname \
+  --memory 4096 \
+  --vcpus 2 \
+  --disk path=$_vdi,size=200,format=qcow2 \
+  --cdrom $_iso \
+  --os-variant=$_ostype \
+  --network network=default,model=virtio \
+  --graphics vnc,listen=0.0.0.0 \
+  --noautoconsole  --import
 
-  sudo vboxmanage  createvm  --name  $_osname --ostype  $_ostype  --default   --basefolder $_osname --register
 
-  sudo vboxmanage  storageattach  $_osname   --storagectl IDE --port 0  --device 1  --type hdd --medium $_vdi
-
-  sudo vboxmanage  storageattach  $_osname   --storagectl IDE --port 0  --device 0  --type dvddrive  --medium  $_iso
-
-
-
-  sudo vboxmanage  modifyvm $_osname --boot1 dvd --boot2 disk --boot3 none --boot4 none
-
-
-  sudo vboxmanage  modifyvm $_osname   --vrde on  --vrdeport 3390
-
-  sudo vboxmanage  modifyvm  $_osname  --natpf1 "guestssh,tcp,,$_sshport,,22"
-
-  setCPU "$_osname" 2
 }
 
 
