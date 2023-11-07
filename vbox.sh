@@ -33,7 +33,7 @@ setup() {
     brew install tesseract libvirt qemu  virt-manager axel
     brew services start libvirt
 
-	virsh net-define --file /usr/local/etc/libvirt/qemu/networks/default.xml
+    virsh net-define --file /usr/local/etc/libvirt/qemu/networks/default.xml
     virsh net-autostart default
     virsh net-start default
 
@@ -53,7 +53,14 @@ EOF
 }
 
 
-
+#link and localfile
+download() {
+  _link="$1"
+  _file="$2"
+  echo "Downloading $_link"
+  axel -n 8 -o "$_file" -q "$_link"
+  echo "Download finished"
+}
 
 
 #isolink  osname  ostype sshport
