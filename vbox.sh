@@ -87,11 +87,13 @@ createVM() {
    fi
   fi
   
+  qemu-img create -f qcow2 -o preallocation=off $_vdi 200G
+
   $_SUDO_VIR_ virt-install \
   --name $_osname \
   --memory 4096 \
   --vcpus 2 \
-  --disk path=$_vdi,size=200,format=qcow2,sparse=true \
+  --disk path=$_vdi,format=qcow2 \
   --cdrom $_iso \
   --os-variant=$_ostype \
   --network network=default,model=virtio \
