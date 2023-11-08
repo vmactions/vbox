@@ -27,7 +27,7 @@ setup() {
     sudo apt-get install   -y    libvirt-daemon-system   virt-manager qemu-kvm  libosinfo-bin  axel
 
     sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn  python3-pip
-    pip3 install pytesseract vncdotool
+    pip3 install pytesseract vncdotool opencv-python
 
   else
     brew install tesseract libvirt qemu  virt-manager axel
@@ -37,7 +37,7 @@ setup() {
     virsh net-autostart default
     virsh net-start default
 
-    pip3 install pytesseract
+    pip3 install pytesseract opencv-python
     echo "Reloading sshd services in the Host"
     sudo sh <<EOF
     echo "" >>/etc/ssh/sshd_config
@@ -271,6 +271,25 @@ attachISO() {
 
 }
 
+#img
+_ocr() {
+  _ocr_img="$1"
+#  pytesseract $_ocr_img
+  python3 -c "
+import cv2,pytesseract,numpy,sys;
+img = cv2.imread(sys.argv[1]);
+gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY);
+gray, img_bin = cv2.threshold(gray,128,255,cv2.THRESH_BINARY | cv2.THRESH_OTSU);
+gray = cv2.bitwise_not(img_bin);
+kernel = numpy.ones((2, 1), numpy.uint8);
+img = cv2.erode(gray, kernel, iterations=1);
+img = cv2.dilate(img, kernel, iterations=1);
+out_below = pytesseract.image_to_string(img);
+print(out_below);
+
+"  "$_ocr_img"
+
+}
 
 #osname [img]
 screenText() {
@@ -292,9 +311,9 @@ screenText() {
   mv temp.$_png  $_png
 
   if [ -z "$_img" ]; then
-    pytesseract $_png
+    _ocr $_png
   else
-    pytesseract $_png >screen.txt
+    _ocr $_png >screen.txt
 
     echo "<!DOCTYPE html>
 <html>
