@@ -4,29 +4,63 @@ set -e
 
 
 
+export PATH=$PATH:/Library/Frameworks/Python.framework/Versions/Current/bin
 
 
-setup() {
-  brew install tesseract
-  pip3 install pytesseract
-  echo "Reloading sshd services in the Host"
-  sudo sh <<EOF
-  echo "" >>/etc/ssh/sshd_config
-  echo "StrictModes no" >>/etc/ssh/sshd_config
-EOF
-  sudo launchctl unload /System/Library/LaunchDaemons/ssh.plist
-  sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist
 
-  if [ "$DEBUG" ]; then
-    _vboxmangeVersion="$(vboxmanage -v | cut -d 'r' -f 1)"
-    echo $_vboxmangeVersion
-    wget -O Oracle_VM_VirtualBox_Extension_Pack.vbox-extpack  https://download.virtualbox.org/virtualbox/$_vboxmangeVersion/Oracle_VM_VirtualBox_Extension_Pack-${_vboxmangeVersion}.vbox-extpack
-    echo y | sudo vboxmanage extpack install    --replace Oracle_VM_VirtualBox_Extension_Pack.vbox-extpack
-  fi
+
+isLinux() {
+  uname -a | grep -i "Linux" >/dev/null
 }
 
 
+_SUDO_VIR_=""
+if isLinux; then
+  _SUDO_VIR_=sudo
+fi
 
+
+
+setup() {
+  if isLinux; then
+    sudo apt-get update
+    sudo apt-get install   -y    libvirt-daemon-system   virt-manager qemu-kvm  libosinfo-bin  axel
+
+    sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn  python3-pip
+    pip3 install pytesseract vncdotool opencv-python
+
+  else
+    brew install tesseract libvirt qemu  virt-manager axel
+    brew services start libvirt
+
+    virsh net-define --file /usr/local/etc/libvirt/qemu/networks/default.xml
+    virsh net-autostart default
+    virsh net-start default
+
+    pip3 install pytesseract opencv-python
+    echo "Reloading sshd services in the Host"
+    sudo sh <<EOF
+    echo "" >>/etc/ssh/sshd_config
+    echo "StrictModes no" >>/etc/ssh/sshd_config
+EOF
+    sudo launchctl unload /System/Library/LaunchDaemons/ssh.plist
+    sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist
+
+  fi
+  mkdir -p "$HOME/.ssh"
+  chmod 700 "$HOME/.ssh"
+  sudo chmod o+rx $HOME
+}
+
+
+#link and localfile
+download() {
+  _link="$1"
+  _file="$2"
+  echo "Downloading $_link"
+  axel -n 8 -o "$_file" -q "$_link"
+  echo "Download finished"
+}
 
 
 #isolink  osname  ostype sshport
@@ -42,30 +76,30 @@ createVM() {
     return 1
   fi
 
-  _vdi="$_osname.vdi"
+  _vdi="$_osname.qcow2"
   _iso="$_osname.iso"
 
   if [ ! -e "$_iso" ]; then
-   echo "Downloading: $_isolink"
-   wget -q -O $_iso "$_isolink"
+   download "$_isolink" $_iso 
+   if echo "$_isolink" | grep 'bz2$'; then
+     mv "$_iso" "$_iso.bz2"
+     bzip2 -dc "$_iso.bz2" >"$_iso"
+   fi
   fi
-   
-  sudo vboxmanage  createhd --filename $_vdi --size 100000
+  
+  qemu-img create -f qcow2 -o preallocation=off $_vdi 200G
 
-  sudo vboxmanage  createvm  --name  $_osname --ostype  $_ostype  --default   --basefolder $_osname --register
+  $_SUDO_VIR_ virt-install \
+  --name $_osname \
+  --memory 6144 \
+  --vcpus 2 \
+  --disk path=$_vdi,format=qcow2 \
+  --cdrom $_iso \
+  --os-variant=$_ostype \
+  --network network=default,model=virtio \
+  --graphics vnc,listen=0.0.0.0 \
+  --noautoconsole  --import
 
-  sudo vboxmanage  storageattach  $_osname   --storagectl IDE --port 0  --device 1  --type hdd --medium $_vdi
-
-  sudo vboxmanage  storageattach  $_osname   --storagectl IDE --port 0  --device 0  --type dvddrive  --medium  $_iso
-
-
-
-  sudo vboxmanage  modifyvm $_osname --boot1 dvd --boot2 disk --boot3 none --boot4 none
-
-
-  sudo vboxmanage  modifyvm $_osname   --vrde on  --vrdeport 3390
-
-  sudo vboxmanage  modifyvm  $_osname  --natpf1 "guestssh,tcp,,$_sshport,,22"
 
 }
 
@@ -78,26 +112,27 @@ createVMFromVHD() {
   
   if [ -z "$_osname" ]; then
     echo "Usage: createVMFromVHD  osname  ostype  sshport"
-    echo "Usage: createVMFromVHD  freebsd   FreeBSD_64  2222"
+    echo "Usage: createVMFromVHD  freebsd   freebsd13.1  2222"
     return 1
   fi
 
 
-  _vhd="$_osname.vhd"
+  _vhd="$_osname.qcow2"
 
+  sudo qemu-img resize $_vhd  +200G
 
-  sudo vboxmanage  createvm  --name  $_osname --ostype  $_ostype  --default   --basefolder $_osname --register
+  $_SUDO_VIR_ virt-install \
+  --name $_osname \
+  --memory 6144 \
+  --vcpus 2 \
+  --disk $_vhd,format=qcow2,bus=virtio \
+  --os-variant=$_ostype \
+  --network network=default,model=virtio \
+  --graphics vnc,listen=0.0.0.0 \
+  --noautoconsole  --import
 
-  sudo vboxmanage  storagectl  $_osname   --name SATA --add sata  --controller IntelAHCI
-
-  sudo vboxmanage  storageattach  $_osname   --storagectl SATA --port 0  --device 0  --type hdd --medium  $_vhd
-
-
-  sudo vboxmanage  modifyvm $_osname   --vrde on  --vrdeport 3390
-
-  sudo vboxmanage  modifyvm  $_osname  --natpf1 "guestssh,tcp,,$_sshport,,22"
-
-  sudo vboxmanage  modifyhd $_vhd   --resize  100000
+  $_SUDO_VIR_  virsh  shutdown $_osname
+  $_SUDO_VIR_  virsh  destroy $_osname
 
 }
 
@@ -107,12 +142,25 @@ createVMFromVHD() {
 
 #ova
 importVM() {
-  _ova="$1"
+  _osname="$1"
+  _ostype="$2"
+  _ova="$3"
   if [ -z "$_ova" ]; then
     echo "Usage: importVM xxxx.ova"
     return 1
   fi
-  sudo vboxmanage  import  $_ova
+  $_SUDO_VIR_  virt-install \
+  --name $_osname \
+  --memory 4096 \
+  --vcpus 2 \
+  --disk $_ova,format=qcow2,bus=virtio \
+  --os-variant=$_ostype \
+  --network network=default,model=virtio \
+  --graphics vnc,listen=0.0.0.0 \
+  --noautoconsole  --import  --check all=off
+
+  $_SUDO_VIR_  virsh  shutdown $_osname
+  $_SUDO_VIR_  virsh  destroy $_osname
 }
 
 #osname
@@ -123,7 +171,7 @@ startVM() {
     echo "Usage: startVM netbsd"
     return 1
   fi
-  sudo vboxmanage  startvm $_osname --type headless
+  $_SUDO_VIR_  virsh  start  $_osname 
 }
 
 
@@ -137,7 +185,7 @@ processOpts() {
     return 1
   fi
 
-  while read -r line; do
+while read -r line; do
   if [ -z "$(echo "$line" | tr -d '# ' )" ]; then
     continue
   fi
@@ -150,8 +198,9 @@ processOpts() {
   _timeout="$(echo "$line" | cut -d '|' -f 3 )"
   echo "========> Text:    $_text"
   echo "========> Keys:    $_keys"
-  echo "========> Timeout: $_timeout"
+  echo "========> Timeout: $_keys"
   if waitForText "$_osname" "$_text" "$_timeout"; then
+    echo "Input keys: $_keys"
     input "$_osname" "$_keys"
   else
     echo "Timeout for waiting for text: $_text"
@@ -172,16 +221,11 @@ clearVM() {
     echo "Usage: clearVM netbsd"
     return 1
   fi
-
-  if ! sudo vboxmanage  controlvm $_osname poweroff; then
-    echo "The vm is not running"
+  if $_SUDO_VIR_  virsh list | grep $_osname; then
+    $_SUDO_VIR_  virsh  shutdown $_osname
+    $_SUDO_VIR_  virsh  destroy $_osname
+    $_SUDO_VIR_  virsh  undefine $_osname  --remove-all-storage
   fi
-
-  if ! sudo vboxmanage unregistervm $_osname --delete ; then
-    echo "no delete"
-  fi
-
-  sudo -i rm -fr "\$HOME/VirtualBox VMs/$_osname"
 
   rm ~/.ssh/known_hosts
 
@@ -196,11 +240,18 @@ shutdownVM() {
     return 1
   fi
 
-  sudo vboxmanage  controlvm $_osname poweroff soft
+  $_SUDO_VIR_  virsh  shutdown  $_osname
   sleep 2
 }
 
-
+#osname
+isRunning() {
+  _osname="$1"
+  if $_SUDO_VIR_  virsh  list --all | grep  $_osname | grep -i running; then
+    return 0
+  fi
+  return 1
+}
 
 detachISO() {
   _osname="$1"
@@ -210,7 +261,7 @@ detachISO() {
     return 1
   fi
   
-  sudo vboxmanage storageattach  $_osname  --storagectl IDE --port 0  --device 0  --type dvddrive  --medium none
+  echo "detachISO  not implemented"
 
 }
 
@@ -223,10 +274,29 @@ attachISO() {
     return 1
   fi
 
-  sudo vboxmanage storageattach  $_osname  --storagectl IDE --port 0  --device 0  --type dvddrive  --medium "$_iso"
+  echo "attachISO  not implemented"
 
 }
 
+#img
+_ocr() {
+  _ocr_img="$1"
+#  pytesseract $_ocr_img
+  python3 -c "
+import cv2,pytesseract,numpy,sys;
+img = cv2.imread(sys.argv[1]);
+gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY);
+gray, img_bin = cv2.threshold(gray,128,255,cv2.THRESH_BINARY | cv2.THRESH_OTSU);
+gray = cv2.bitwise_not(img_bin);
+kernel = numpy.ones((2, 1), numpy.uint8);
+img = cv2.erode(gray, kernel, iterations=1);
+img = cv2.dilate(img, kernel, iterations=1);
+out_below = pytesseract.image_to_string(img);
+print(out_below);
+
+"  "$_ocr_img"
+
+}
 
 #osname [img]
 screenText() {
@@ -239,7 +309,7 @@ screenText() {
   fi
 
   _png="${_img:-$_osname.png}"
-  while ! sudo vboxmanage controlvm $_osname screenshotpng  temp.$_png  >/dev/null 2>&1; do
+  while ! vncdotool capture  temp.$_png  >/dev/null 2>&1; do
     #echo "screenText error, lets just wait"
     sleep 3
   done
@@ -248,9 +318,9 @@ screenText() {
   mv temp.$_png  $_png
 
   if [ -z "$_img" ]; then
-    pytesseract $_png
+    _ocr $_png
   else
-    pytesseract $_png >screen.txt
+    _ocr $_png >screen.txt
 
     echo "<!DOCTYPE html>
 <html>
@@ -302,85 +372,6 @@ waitForText() {
 }
 
 
-
-startCF() {
-  _http_port="$1"
-
-  if [ -z "$_http_port" ]; then
-    _http_port=8000
-    echo "Using default port 8000"
-  fi
-
-
-
-  NGROK_MAC="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-darwin-amd64.tgz"
-  NGROK_Linux="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64"
-  NGROK_Win="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
-    
-    
-  if ! killall cloudflared; then
-    echo "ok"
-  fi
-
-  link="$NGROK_Win"
-
-  cloudflared="./cloudflared"
-
-  log="./cf.log"
-
-  protocol=http
-  port=$_http_port
-
-  if uname -a | grep -i "darwin"; then
-    if [ ! -e "$cloudflared" ]; then
-      link="$NGROK_MAC"
-      echo "Using link: $link"
-      wget -q -O cloudflared.tgz "$link"
-      tar xzf cloudflared.tgz
-      chmod +x cloudflared
-    fi
-  elif uname -a | grep -i "linux"; then
-    if [ ! -e "$cloudflared" ]; then
-      link="$NGROK_Linux"
-      wget -q -O cloudflared "$link"
-      chmod +x cloudflared
-    fi
-  else
-    link="$NGROK_Win"
-    echo "not implementd for Windows yet"
-    exit 1
-    cloudflared="$cloudflared.exe"
-  fi
-
-
-
-  if ! ${cloudflared} update; then 
-    echo ok;
-  fi
-
-  rm -rf "$log"
-  ${cloudflared} tunnel --url ${protocol}://localhost:${port} >${log} 2>&1 &
-
-
-  while ! grep "registered connIndex=" ${log}; do
-    echo "waiting for the tunnel"
-    sleep 2
-  done
-
-
-  domain="$(cat "${log}" | grep https:// | grep trycloudflare.com | head -1 | cut -d '|' -f 2 | tr -d ' ' | cut -d '/' -f 3)"
-
-  echo "================================="
-  echo ""
-  echo ""
-  echo "Please visit:  https://$domain"
-  echo ""
-  echo ""
-  echo "================================="
-
-}
-
-
 startWeb() {
   _osname="$1"
 
@@ -414,37 +405,38 @@ exportOVA() {
   _osname="$1"
   _ova="$2"
   if [ -z "$_ova" ]; then
-    echo "Usage: exportOVA netbsd netbsd.9.2.ova"
+    echo "Usage: exportOVA netbsd netbsd.9.2.qcow2"
     return 1
   fi
 
-  sudo vboxmanage export $_osname --output "$_ova"
+  _sor="$($_SUDO_VIR_  virsh domblklist $_osname | grep -E -o '/.*qcow2')"
 
-  sudo chmod +r "$_ova"
+  sudo cp  $_sor "$_ova"
+
+  sudo xz -z "$_ova" -k -T 0
+
+  sudo chmod +r "$_ova.xz"
 }
 
 
-#osname port [idfile]
+#osname [_idfile]
 addSSHHost() {
   _osname="$1"
-  _port="$2"
-  _idfile="$3"
-  if [ -z "$_port" ]; then
-    echo "Usage: addSSHHost netbsd 2225"
-    return 1
-  fi
+  _idfile="$2"
+
   if [ ! -e ~/.ssh/id_rsa ] ; then 
     ssh-keygen -f  ~/.ssh/id_rsa -q -N "" 
   fi
 
+  _ip="$(getVMIP $_osname)"
+
   echo "
 StrictHostKeyChecking=accept-new
-SendEnv   CI  GITHUB_* VM*
+SendEnv   CI  GITHUB_* 
 
 Host $_osname
   User root
-  Port $_port
-  HostName localhost
+  HostName $_ip
 " >>~/.ssh/config
 
   if [ "$_idfile" ]; then
@@ -481,7 +473,7 @@ addNAT() {
     echo "Usage: addNAT osname protocol hostPort vmPort"
     return 1
   fi
-  sudo vboxmanage  modifyvm  "$_osname" --natpf1 "$_hostPort,$_proto,,$_hostPort,,$_vmPort"
+  echo "addNAT  not implemented"
 
 }
 
@@ -494,7 +486,7 @@ setMemory() {
     echo "Usage: setMemory osname 2048"
     return 1
   fi
-  sudo vboxmanage  modifyvm  "$_osname"   --memory $_memsize
+  echo "setMemory  not implemented"
 
 }
 
@@ -506,11 +498,20 @@ setCPU() {
     echo "Usage: setCPU osname 3"
     return 1
   fi
-  sudo vboxmanage  modifyvm  "$_osname"   --cpus "$_cpuCount"
+  echo "setCPU  not implemented"
 
 }
 
 
+#osname
+getVMIP() {
+  $_SUDO_VIR_  virsh net-dhcp-leases default | grep  -o -E '192.168.[0-9]*.[0-9]*'
+}
+
+
+
+
+# input the file as shell script to execute
 inputFile() {
   _osname="$1"
   _file="$2"
@@ -519,10 +520,29 @@ inputFile() {
     echo "Usage: inputFile netbsd file.txt"
     return 1
   fi
-
-  sudo vboxmanage controlvm $_osname keyboardputfile  "$_file"
+  vncdotool --force-caps  --delay=100  typefile "$_file"
 
 }
+
+
+#upload a local file into the remote VM
+#osname  local  remote
+uploadFile() {
+  _osname="$1"
+  _local="$2" #local file in the host machine.
+  _remote="$3" #remote file in the VM
+  if [ -z "$_osname" ]; then
+    echo "Usage: uploadFile openbsd local remote"
+    return 1
+  fi
+  export VM_OS_NAME=$_osname
+  string  "cat - >$_remote"
+  input "$_osname" "enter"
+  inputFile "$_osname"  "$_local"
+  ctrlD
+
+}
+
 
 
 #keys splitted by ;
@@ -556,17 +576,9 @@ string() {
     return 1
   fi
   
-  sudo vboxmanage controlvm $_osname  keyboardputstring  "$1"
+  vncdotool --force-caps type "$1"
 }
 
-
-#https://www.win.tue.nl/~aeb/linux/kbd/scancodes-1.html
-
-#press down  up :   scancode   (0x80|scancode)
-#example:
-#  enter scancode=0x1c
-#  enter  down = 0x1c
-#  enter  up   = 0x9c
 
 
 
@@ -578,7 +590,7 @@ enter() {
     echo "Usage: enter netbsd"
     return 1
   fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 1c 9c
+  vncdotool key enter
 }
 
 
@@ -590,7 +602,7 @@ tab() {
     echo "Usage: tab netbsd"
     return 1
   fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 0f 8f
+  vncdotool key tab
 }
 
 #osname
@@ -601,7 +613,7 @@ f2() {
     echo "Usage: f2 netbsd"
     return 1
   fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 3c bc
+  vncdotool key f2
 }
 
 #osname
@@ -612,7 +624,7 @@ f7() {
     echo "Usage: f7 netbsd"
     return 1
   fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 41 c1
+  vncdotool key f7
 }
 
 
@@ -626,7 +638,7 @@ down() {
     echo "Usage: down netbsd"
     return 1
   fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 50 d0
+  vncdotool key down
 }
 
 
@@ -638,12 +650,21 @@ up() {
     echo "Usage: up netbsd"
     return 1
   fi
-  sudo vboxmanage controlvm $_osname keyboardputscancode 48 c8
+  vncdotool key up
 }
 
 
 
+#osname
+ctrlD() {
+  _osname="${1:-$VM_OS_NAME}"
 
+  if [ -z "$_osname" ]; then
+    echo "Usage: up netbsd"
+    return 1
+  fi
+  vncdotool key ctrl-d
+}
 
 "$@"
 
