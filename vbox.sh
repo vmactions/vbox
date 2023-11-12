@@ -242,9 +242,6 @@ shutdownVM() {
 
   $_SUDO_VIR_  virsh  shutdown  $_osname
   sleep 2
-  while isRunning $_osname; do
-    sleep 5
-  done
 }
 
 #osname
