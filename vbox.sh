@@ -244,6 +244,21 @@ shutdownVM() {
   sleep 2
 }
 
+
+#force shutdown
+#osname
+destroyVM() {
+  _osname="$1"
+  
+  if [ -z "$_osname" ]; then
+    echo "Usage: destroyVM netbsd"
+    return 1
+  fi
+
+  $_SUDO_VIR_  virsh  destroy  $_osname
+  sleep 2
+}
+
 #osname
 isRunning() {
   _osname="$1"
