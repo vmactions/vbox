@@ -96,7 +96,7 @@ createVM() {
   --disk path=$_vdi,format=qcow2 \
   --cdrom $_iso \
   --os-variant=$_ostype \
-  --network network=default,model=virtio \
+  --network network=default,model=e1000 \
   --graphics vnc,listen=0.0.0.0 \
   --noautoconsole  --import
 
@@ -127,7 +127,7 @@ createVMFromVHD() {
   --vcpus 2 \
   --disk $_vhd,format=qcow2,bus=virtio \
   --os-variant=$_ostype \
-  --network network=default,model=virtio \
+  --network network=default,model=e1000 \
   --graphics vnc,listen=0.0.0.0 \
   --noautoconsole  --import
 
@@ -155,7 +155,7 @@ importVM() {
   --vcpus 2 \
   --disk $_ova,format=qcow2,bus=virtio \
   --os-variant=$_ostype \
-  --network network=default,model=virtio \
+  --network network=default,model=e1000 \
   --graphics vnc,listen=0.0.0.0 \
   --noautoconsole  --import  --check all=off
 
