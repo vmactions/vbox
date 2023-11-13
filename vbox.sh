@@ -151,7 +151,7 @@ importVM() {
   fi
   $_SUDO_VIR_  virt-install \
   --name $_osname \
-  --memory 4096 \
+  --memory 6144 \
   --vcpus 2 \
   --disk $_ova,format=qcow2,bus=virtio \
   --os-variant=$_ostype \
