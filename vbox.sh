@@ -327,8 +327,9 @@ screenText() {
   _png="${_img}"
   if [ -z "$_img" ]; then
     _png="$(mktemp)"
+    echo "using _png=$_png"
   fi
-  while ! vncdotool capture  $_png  >/dev/null 2>&1; do
+  while ! vncdotool capture  $_png ; do
     echo "screenText error, lets just wait"
     sleep 3
   done
