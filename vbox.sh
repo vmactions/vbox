@@ -324,14 +324,15 @@ screenText() {
     return 1
   fi
 
-  _png="${_img:-$_osname.png}"
-  while ! vncdotool capture  temp.$_png  >/dev/null 2>&1; do
-    #echo "screenText error, lets just wait"
+  _png="${_img}"
+  if [ -z "$_img" ]; then
+    _png="$(mktemp)"
+  fi
+  while ! vncdotool capture  $_png  >/dev/null 2>&1; do
+    echo "screenText error, lets just wait"
     sleep 3
   done
-  rm -rf $_png
-  sudo chmod 666 temp.$_png
-  mv temp.$_png  $_png
+  sudo chmod 666 $_png
 
   if [ -z "$_img" ]; then
     _ocr $_png
@@ -341,7 +342,7 @@ screenText() {
     echo "<!DOCTYPE html>
 <html>
 <head>
-<title>$_osname</title>
+<title>$_osname $VM_RELEASE</title>
 <meta http-equiv='refresh' content='1'>
 </head>
 <body onclick='stop()' style='background-color:grey;'>
