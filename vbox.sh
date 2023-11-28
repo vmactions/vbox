@@ -326,7 +326,7 @@ screenText() {
 
   _png="${_img}"
   if [ -z "$_img" ]; then
-    _png="$(mktemp)"
+    _png="$(mktemp).png"
     echo "using _png=$_png"
   fi
   while ! vncdotool capture  $_png ; do
