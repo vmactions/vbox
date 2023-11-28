@@ -329,8 +329,8 @@ screenText() {
     _png="$(mktemp).png"
     echo "using _png=$_png"
   fi
-  while ! vncdotool capture  $_png ; do
-    echo "screenText error, lets just wait"
+  while ! vncdotool capture  $_png >/dev/null 2>&1; do
+    #echo "screenText error, lets just wait"
     sleep 3
   done
   sudo chmod 666 $_png
