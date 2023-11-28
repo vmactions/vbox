@@ -337,6 +337,7 @@ screenText() {
 
   if [ -z "$_img" ]; then
     _ocr $_png
+    rm -rf $_png
   else
     _ocr $_png >screen.txt
 
