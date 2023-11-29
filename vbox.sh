@@ -296,7 +296,7 @@ attachISO() {
 #img
 _ocr() {
   _ocr_img="$1"
-  tesseract -l eng $_ocr_img -
+  tesseract -l eng $_ocr_img - 2>/dev/null
 #  pytesseract $_ocr_img
 #  python3 -c "
 #import cv2,pytesseract,numpy,sys;
