@@ -93,7 +93,7 @@ createVM() {
   --name $_osname \
   --memory 6144 \
   --vcpus 2 \
-  --disk path=$_vdi,format=qcow2 \
+  --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
   --cdrom $_iso \
   --os-variant=$_ostype \
   --network network=default,model=e1000 \
@@ -125,7 +125,7 @@ createVMFromVHD() {
   --name $_osname \
   --memory 6144 \
   --vcpus 2 \
-  --disk $_vhd,format=qcow2,bus=virtio \
+  --disk $_vhd,format=qcow2,bus=${VM_DISK:-virtio} \
   --os-variant=$_ostype \
   --network network=default,model=e1000 \
   --graphics vnc,listen=0.0.0.0 \
@@ -155,7 +155,7 @@ importVM() {
     --name $_osname \
     --memory 6144 \
     --vcpus 2 \
-    --disk $_ova,format=qcow2,bus=virtio \
+    --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
     --cdrom $_iso --boot cdrom,hd \
     --os-variant=$_ostype \
     --network network=default,model=e1000 \
@@ -166,7 +166,7 @@ importVM() {
     --name $_osname \
     --memory 6144 \
     --vcpus 2 \
-    --disk $_ova,format=qcow2,bus=virtio \
+    --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
     --os-variant=$_ostype \
     --network network=default,model=e1000 \
     --graphics vnc,listen=0.0.0.0 \
