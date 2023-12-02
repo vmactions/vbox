@@ -145,19 +145,33 @@ importVM() {
   _osname="$1"
   _ostype="$2"
   _ova="$3"
+  _iso="$4"
   if [ -z "$_ova" ]; then
     echo "Usage: importVM xxxx.ova"
     return 1
   fi
-  $_SUDO_VIR_  virt-install \
-  --name $_osname \
-  --memory 6144 \
-  --vcpus 2 \
-  --disk $_ova,format=qcow2,bus=virtio \
-  --os-variant=$_ostype \
-  --network network=default,model=e1000 \
-  --graphics vnc,listen=0.0.0.0 \
-  --noautoconsole  --import  --check all=off
+  if [ "$_iso" ]; then
+    $_SUDO_VIR_  virt-install \
+    --name $_osname \
+    --memory 6144 \
+    --vcpus 2 \
+    --disk $_ova,format=qcow2,bus=virtio \
+	--cdrom $_iso \
+    --os-variant=$_ostype \
+    --network network=default,model=e1000 \
+    --graphics vnc,listen=0.0.0.0 \
+    --noautoconsole  --import  --check all=off
+  else
+    $_SUDO_VIR_  virt-install \
+    --name $_osname \
+    --memory 6144 \
+    --vcpus 2 \
+    --disk $_ova,format=qcow2,bus=virtio \
+    --os-variant=$_ostype \
+    --network network=default,model=e1000 \
+    --graphics vnc,listen=0.0.0.0 \
+    --noautoconsole  --import  --check all=off
+  fi
 
   $_SUDO_VIR_  virsh  shutdown $_osname
   $_SUDO_VIR_  virsh  destroy $_osname
@@ -227,7 +241,7 @@ clearVM() {
     $_SUDO_VIR_  virsh  undefine $_osname  --remove-all-storage
   fi
 
-  rm ~/.ssh/known_hosts
+  rm -f ~/.ssh/known_hosts
 
 }
 
