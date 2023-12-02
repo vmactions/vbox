@@ -156,7 +156,7 @@ importVM() {
     --memory 6144 \
     --vcpus 2 \
     --disk $_ova,format=qcow2,bus=virtio \
-	--cdrom $_iso \
+    --cdrom $_iso --boot cdrom,hd \
     --os-variant=$_ostype \
     --network network=default,model=e1000 \
     --graphics vnc,listen=0.0.0.0 \
@@ -289,8 +289,10 @@ detachISO() {
     echo "Usage: detachISO netbsd"
     return 1
   fi
-  
-  echo "detachISO  not implemented"
+  echo "<disk type='file' device='cdrom'>
+  <target dev='hdc' bus='ide'/>
+</disk>" >remove-cdrom.xml
+  $_SUDO_VIR_  virsh detach-device "$_osname" --file remove-cdrom.xml --persistent
 
 }
 
@@ -302,8 +304,18 @@ attachISO() {
     echo "Usage: attachISO netbsd  netbsd.iso"
     return 1
   fi
+  echo "<disk type='file' device='cdrom'>
+  <driver name='qemu' type='raw'/>
+  <target dev='hdc' bus='ide'/>
+  <readonly/>
+  <address type='drive' controller='0' bus='1' target='0' unit='0'/>
+</disk>" >cdrom.xml
 
-  echo "attachISO  not implemented"
+  $_SUDO_VIR_  virsh attach-device "$_osname" --file cdrom.xml --persistent
+  $_SUDO_VIR_  virsh change-media "$_osname" hdc --insert --source "$_iso"
+  $_SUDO_VIR_  virsh dumpxml "$_osname"  >dump.xml
+  sed -i "/<boot dev='hd'/i <boot dev='cdrom'/>" dump.xml
+  $_SUDO_VIR_  virsh define dump.xml
 
 }
 
