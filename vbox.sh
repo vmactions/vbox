@@ -566,7 +566,7 @@ setCPU() {
 
 #osname
 getVMIP() {
-  $_SUDO_VIR_  virsh net-dhcp-leases default | grep  -o -E '192.168.[0-9]*.[0-9]*'
+  $_SUDO_VIR_  virsh net-dhcp-leases default | grep  -o -E '192.168.[0-9]*.[0-9]*' | head -1
 }
 
 
