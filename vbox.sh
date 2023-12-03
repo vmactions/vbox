@@ -178,6 +178,7 @@ importVM() {
 }
 
 isVMReady() {
+  _osname="$1"
   [ -e "$HOME/$_osname.rebooted" ]
 }
 
