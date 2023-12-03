@@ -182,6 +182,16 @@ isVMReady() {
   [ -e "$HOME/$_osname.rebooted" ]
 }
 
+waitForVMReady() {
+  _osname="$1"
+  while ! isVMReady $_osname ; do
+    echo "VM is booting"
+    sleep 2
+	enter
+  done
+  echo "VM is ready!"
+}
+
 #osname
 startVM() {
   _osname="$1"
