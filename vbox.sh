@@ -190,6 +190,7 @@ waitForVMReady() {
 	enter
   done
   echo "VM is ready!"
+  cat "$HOME/$_osname.rebooted"
 }
 
 #osname
