@@ -177,6 +177,10 @@ importVM() {
   $_SUDO_VIR_  virsh  destroy $_osname
 }
 
+isVMReady() {
+  [ -e "$HOME/$_osname.rebooted" ]
+}
+
 #osname
 startVM() {
   _osname="$1"
@@ -185,6 +189,7 @@ startVM() {
     echo "Usage: startVM netbsd"
     return 1
   fi
+  rm -f $HOME/$_osname.rebooted
   $_SUDO_VIR_  virsh  start  $_osname 
 }
 
@@ -253,7 +258,7 @@ shutdownVM() {
     echo "Usage: shutdownVM netbsd"
     return 1
   fi
-
+  rm -f $HOME/$_osname.rebooted
   $_SUDO_VIR_  virsh  shutdown  $_osname
   sleep 2
 }
@@ -268,7 +273,7 @@ destroyVM() {
     echo "Usage: destroyVM netbsd"
     return 1
   fi
-
+  rm -f $HOME/$_osname.rebooted
   $_SUDO_VIR_  virsh  destroy  $_osname
   sleep 2
 }
