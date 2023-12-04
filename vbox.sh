@@ -474,7 +474,7 @@ startWeb() {
 </html>" >index.html
   fi
 
-  (while true; do screenText "$_osname" "screen.png"; done)&
+  (while true; do screenText "$_osname" "screen.png"; sleep 2; done)&
 
 }
 
