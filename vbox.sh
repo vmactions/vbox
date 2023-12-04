@@ -659,6 +659,16 @@ string() {
 
 
 
+#osname
+space() {
+  _osname="${1:-$VM_OS_NAME}"
+
+  if [ -z "$_osname" ]; then
+    echo "Usage: enter netbsd"
+    return 1
+  fi
+  vncdotool type ' '
+}
 
 #osname
 enter() {
