@@ -24,7 +24,7 @@ fi
 setup() {
   if isLinux; then
     sudo apt-get update
-    sudo apt-get install   -y    libvirt-daemon-system   virt-manager qemu-kvm  libosinfo-bin  axel
+    sudo apt-get install   -y    libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm libosinfo-bin  axel
 
     sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn  python3-pip
     pip3 install pytesseract vncdotool opencv-python
@@ -93,6 +93,7 @@ createVM() {
   --name $_osname \
   --memory 6144 \
   --vcpus 2 \
+  --arch ${VM_ARCH:-x86_64} \
   --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
   --cdrom $_iso \
   --os-variant=$_ostype \
@@ -125,6 +126,7 @@ createVMFromVHD() {
   --name $_osname \
   --memory 6144 \
   --vcpus 2 \
+  --arch ${VM_ARCH:-x86_64} \
   --disk $_vhd,format=qcow2,bus=${VM_DISK:-virtio} \
   --os-variant=$_ostype \
   --network network=default,model=e1000 \
@@ -155,6 +157,7 @@ importVM() {
     --name $_osname \
     --memory 6144 \
     --vcpus 2 \
+    --arch ${VM_ARCH:-x86_64} \
     --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
     --cdrom $_iso --boot cdrom,hd \
     --os-variant=$_ostype \
@@ -166,6 +169,7 @@ importVM() {
     --name $_osname \
     --memory 6144 \
     --vcpus 2 \
+    --arch ${VM_ARCH:-x86_64} \
     --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
     --os-variant=$_ostype \
     --network network=default,model=e1000 \
