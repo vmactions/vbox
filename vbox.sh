@@ -591,7 +591,6 @@ getVMIP() {
   if [ -e "$HOME/$_osname.rebooted" ]; then
     line=$(head -1 "$HOME/$_osname.rebooted")
     if [ "$line" ]; then
-      printf -- "%s" "read ip from rebooted: $line" >&2
       echo "$line"
     fi
   fi
