@@ -587,6 +587,14 @@ setCPU() {
 
 #osname
 getVMIP() {
+  _osname="$1"
+  if [ -e "$HOME/$_osname.rebooted" ]; then
+    line=$(head -1 "$HOME/$_osname.rebooted")
+    if [ "$line" ]; then
+      printf -- "%s" "read ip from rebooted: $line" >&2
+      echo "$line"
+    fi
+  fi
   $_SUDO_VIR_  virsh net-dhcp-leases default | grep  -o -E '192.168.[0-9]*.[0-9]*' | head -1
 }
 
