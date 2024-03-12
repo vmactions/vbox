@@ -493,9 +493,7 @@ exportOVA() {
 
   _sor="$($_SUDO_VIR_  virsh domblklist $_osname | grep -E -o '/.*qcow2')"
 
-  sudo cp  $_sor "$_ova"
-
-  sudo xz -z "$_ova" -k -T 0
+  sudo xz -z "$_sor" -k -T 0 -c >"$_ova"
 
   sudo chmod +r "$_ova.xz"
 }
