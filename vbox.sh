@@ -27,7 +27,10 @@ setup() {
     sudo apt-get install   -y    libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm libosinfo-bin  axel
 
     sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn  python3-pip python3-opencv
-    pip3 install --break-system-packages  pytesseract vncdotool opencv-python
+    if ! pip3 install --break-system-packages  pytesseract vncdotool opencv-python ; then
+      #ubuntu 22.04
+      pip3 install   pytesseract vncdotool opencv-python 
+    fi
 
   else
     brew install tesseract libvirt qemu  virt-manager axel
