@@ -26,8 +26,8 @@ setup() {
     sudo apt-get update
     sudo apt-get install   -y    libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm libosinfo-bin  axel
 
-    sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn  python3-pip pipx python3-opencv
-    pipx install --include-deps pytesseract vncdotool opencv-python
+    sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn  python3-pip python3-opencv
+    pip3 install --break-system-packages  pytesseract vncdotool opencv-python
 
   else
     brew install tesseract libvirt qemu  virt-manager axel
