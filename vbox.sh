@@ -151,6 +151,8 @@ importVM() {
   _ostype="$2"
   _ova="$3"
   _iso="$4"
+  _mem="${5:-6144}"
+  _cpu="${6:-2}"
   if [ -z "$_ova" ]; then
     echo "Usage: importVM xxxx.ova"
     return 1
@@ -158,8 +160,8 @@ importVM() {
   if [ "$_iso" ]; then
     $_SUDO_VIR_  virt-install \
     --name $_osname \
-    --memory 6144 \
-    --vcpus 2 \
+    --memory $_mem \
+    --vcpus $_cpu \
     --arch ${VM_ARCH:-x86_64} \
     --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
     --cdrom $_iso --boot cdrom,hd \
@@ -170,8 +172,8 @@ importVM() {
   else
     $_SUDO_VIR_  virt-install \
     --name $_osname \
-    --memory 6144 \
-    --vcpus 2 \
+    --memory $_mem \
+    --vcpus $_cpu \
     --arch ${VM_ARCH:-x86_64} \
     --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
     --os-variant=$_ostype \
