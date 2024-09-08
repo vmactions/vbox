@@ -500,6 +500,7 @@ exportOVA() {
 
   sudo xz -z "$_sor" -k -T 0 -c | split -b 2000M -d -a 1 - "$_ova.xz."
   ls -lah
+  sudo mv "$_ova.xz.0" "$_ova.xz"
   sudo chmod +r $_ova.xz*
 }
 
