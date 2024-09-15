@@ -24,7 +24,7 @@ fi
 setup() {
   if isLinux; then
     sudo apt-get update
-    sudo apt-get install   -y    libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm libosinfo-bin  axel
+    sudo apt-get install   -y  zstd  libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm libosinfo-bin  axel
 
     sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn  python3-pip python3-opencv
     if ! pip3 install --break-system-packages  pytesseract vncdotool opencv-python ; then
@@ -497,11 +497,11 @@ exportOVA() {
   fi
 
   _sor="$($_SUDO_VIR_  virsh domblklist $_osname | grep -E -o '/.*qcow2')"
-
-  sudo split -b 2000M -d -a 1 "$_sor" "$_ova."
+  echo "$_sor"
+  sudo zstd -c "$_sor" | split -b 2000M -d -a 1 - "$_ova.zst."
   ls -lah
-  sudo mv "$_ova.0" "$_ova"
-  sudo chmod +r ${_ova}*
+  sudo mv "$_ova.zst.0" "$_ova.zst"
+  sudo chmod +r ${_ova}.zst*
 }
 
 
