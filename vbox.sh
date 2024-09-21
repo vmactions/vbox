@@ -21,15 +21,19 @@ fi
 
 
 
+#installOCR
 setup() {
+  _installOCR="$1"
   if isLinux; then
     sudo apt-get update
     sudo apt-get install   -y  zstd  libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm libosinfo-bin  axel
 
-    sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn  python3-pip python3-opencv
-    if ! pip3 install --break-system-packages  pytesseract vncdotool opencv-python ; then
-      #ubuntu 22.04
-      pip3 install   pytesseract vncdotool opencv-python 
+    if [ "$_installOCR" ]; then
+      sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn python3-opencv python3-pip
+      if ! pip3 install --break-system-packages  pytesseract opencv-python vncdotool; then
+        #ubuntu 22.04
+        pip3 install   pytesseract opencv-python vncdotool
+      fi
     fi
 
   else
@@ -458,9 +462,10 @@ waitForText() {
   return 1 #timeout
 }
 
-
+#osname needOCR
 startWeb() {
   _osname="$1"
+  _needOCR="$2"
 
   if [ -z "$_osname" ]; then
     echo "Usage: startWeb netbsd"
@@ -483,7 +488,11 @@ startWeb() {
 </html>" >index.html
   fi
 
-  (while true; do screenText "$_osname" "screen.png"; sleep 1; done)&
+  if [ "$_needOCR" ]; then
+    (while true; do screenText "$_osname" "screen.png"; sleep 1; done)&
+  else
+    (while true; do $_SUDO_VIR_  virsh "$_osname" "screen.ppm"; convert "screen.ppm" "screen.png"; sleep 1; done)&
+  fi
 
 }
 
