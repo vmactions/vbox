@@ -200,7 +200,7 @@ waitForVMReady() {
   while ! isVMReady $_osname ; do
     echo "VM is booting"
     sleep 2
-	enter
+    $_SUDO_VIR_ virsh send-key $_osname KEY_ENTER
   done
   echo "VM is ready!"
   cat "$HOME/$_osname.rebooted"
