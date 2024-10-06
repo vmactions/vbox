@@ -526,6 +526,7 @@ addSSHHost() {
   _ip="$(getVMIP $_osname)"
 
   echo "
+Include config.d/*
 StrictHostKeyChecking=accept-new
 SendEnv   CI  GITHUB_* 
 
@@ -539,6 +540,16 @@ Host $_osname
 " >>~/.ssh/config
   fi
 
+  mkdir -p ~/.ssh/config.d
+
+  mkdir -p /home/runner/.local/bin
+  echo "#!/usr/bin/env sh
+
+ssh $_osname <\$1
+  
+">/home/runner/.local/bin/$_osname
+
+  chmod +x /home/runner/.local/bin/$_osname
 
 }
 
