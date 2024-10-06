@@ -545,7 +545,7 @@ Host $_osname
   mkdir -p /home/runner/.local/bin
   echo "#!/usr/bin/env sh
 
-ssh $_osname <\$1
+ssh $_osname sh<\$1
   
 ">/home/runner/.local/bin/$_osname
 
