@@ -752,6 +752,16 @@ f7() {
   vncdotool key f7
 }
 
+#osname
+f8() {
+  _osname="${1:-$VM_OS_NAME}"
+  
+  if [ -z "$_osname" ]; then
+    echo "Usage: f8 netbsd"
+    return 1
+  fi
+  vncdotool key f8
+}
 
 
 
