@@ -229,7 +229,7 @@ importVM() {
       --memory 6144 \
       --vcpus 2 \
       --arch ${VM_ARCH} \
-      --disk $_vhd,format=qcow2,bus=${VM_DISK:-virtio} \
+      --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
       --os-variant=$_ostype \
       --network network=default,model=e1000 \
       --graphics vnc,listen=0.0.0.0 \
