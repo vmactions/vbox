@@ -85,6 +85,9 @@ createVM() {
 
   _vdi="$_osname.qcow2"
   _iso="$_osname.iso"
+  if [[ "$_isolink" == *"img" ]]; then
+   _iso="$_osname.img"
+  fi
 
   if [ ! -e "$_iso" ]; then
    download "$_isolink" $_iso 
@@ -97,23 +100,32 @@ createVM() {
   qemu-img create -f qcow2 -o preallocation=off $_vdi 200G
 
   if [ "$VM_ARCH" = "aarch64" ]; then
-    $_SUDO_VIR_ virt-install \
-    --name $_osname \
-    --memory 6144 \
-    --vcpus 2 \
-    --arch ${VM_ARCH} \
-    --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
-    --cdrom $_iso \
-    --os-variant=$_ostype \
-    --network network=default,model=e1000 \
-    --graphics vnc,listen=0.0.0.0 \
-    --noautoconsole  --import --machine virt --boot uefi
+    if [[ "$_iso" == *"img" ]]; then
+      $_SUDO_VIR_ virt-install \
+      --name $_osname \
+      --memory 6144 \
+      --vcpus 2 \
+      --arch aarch64 \
+      --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
+      --disk $_iso \
+      --os-variant=$_ostype \
+      --network network=default,model=e1000 \
+      --graphics vnc,listen=0.0.0.0 \
+      --noautoconsole  --import --machine virt --noacpi --boot loader=/usr/share/AAVMF/AAVMF_CODE.fd
+    else
+      $_SUDO_VIR_ virt-install \
+      --name $_osname \
+      --memory 6144 \
+      --vcpus 2 \
+      --arch aarch64 \
+      --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
+      --cdrom $_iso \
+      --os-variant=$_ostype \
+      --network network=default,model=e1000 \
+      --graphics vnc,listen=0.0.0.0 \
+      --noautoconsole  --import --machine virt --noacpi --boot loader=/usr/share/AAVMF/AAVMF_CODE.fd
+    fi
 
-    $_SUDO_VIR_  virsh  shutdown $_osname
-    $_SUDO_VIR_  virsh  destroy $_osname
-
-    disableSecureBoot $_osname
-    $_SUDO_VIR_  virsh  start $_osname
   else
     $_SUDO_VIR_ virt-install \
     --name $_osname \
@@ -158,12 +170,12 @@ createVMFromVHD() {
     --os-variant=$_ostype \
     --network network=default,model=e1000 \
     --graphics vnc,listen=0.0.0.0 \
-    --noautoconsole  --import --machine virt --boot uefi
+    --noautoconsole  --import --machine virt --noacpi --boot loader=/usr/share/AAVMF/AAVMF_CODE.fd
 
     $_SUDO_VIR_  virsh  shutdown $_osname
     $_SUDO_VIR_  virsh  destroy $_osname
 
-    disableSecureBoot $_osname
+
   else
     $_SUDO_VIR_ virt-install \
     --name $_osname \
@@ -210,43 +222,31 @@ importVM() {
     echo "Usage: importVM xxxx.ova"
     return 1
   fi
-  if [ "$_iso" ]; then
+
+  if [ "$VM_ARCH" = "aarch64" ]; then
+    $_SUDO_VIR_ virt-install \
+    --name $_osname \
+    --memory 6144 \
+    --vcpus 2 \
+    --arch aarch64 \
+    --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
+    --os-variant=$_ostype \
+    --network network=default,model=e1000 \
+    --graphics vnc,listen=0.0.0.0 \
+    --noautoconsole  --import --check all=off --machine virt --noacpi --boot loader=/usr/share/AAVMF/AAVMF_CODE.fd
+  else
     $_SUDO_VIR_  virt-install \
     --name $_osname \
     --memory $_mem \
     --vcpus $_cpu \
     --arch ${VM_ARCH:-x86_64} \
     --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
-    --cdrom $_iso --boot cdrom,hd \
     --os-variant=$_ostype \
     --network network=default,model=e1000 \
     --graphics vnc,listen=0.0.0.0 \
     --noautoconsole  --import  --check all=off
-  else
-    if [ "$VM_ARCH" = "aarch64" ]; then
-      $_SUDO_VIR_ virt-install \
-      --name $_osname \
-      --memory 6144 \
-      --vcpus 2 \
-      --arch ${VM_ARCH} \
-      --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
-      --os-variant=$_ostype \
-      --network network=default,model=e1000 \
-      --graphics vnc,listen=0.0.0.0 \
-      --noautoconsole  --import --check all=off --machine virt --boot uefi
-    else
-      $_SUDO_VIR_  virt-install \
-      --name $_osname \
-      --memory $_mem \
-      --vcpus $_cpu \
-      --arch ${VM_ARCH:-x86_64} \
-      --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
-      --os-variant=$_ostype \
-      --network network=default,model=e1000 \
-      --graphics vnc,listen=0.0.0.0 \
-      --noautoconsole  --import  --check all=off
-    fi
   fi
+
 
   $_SUDO_VIR_  virsh  shutdown $_osname
   $_SUDO_VIR_  virsh  destroy $_osname
