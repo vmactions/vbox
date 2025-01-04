@@ -728,7 +728,13 @@ inputFile() {
     echo "Usage: inputFile netbsd file.txt"
     return 1
   fi
-  vncdotool --force-caps  --delay=100  typefile "$_file"
+  if [ "$VM_USE_CONSOLE_BUILD" ]; then
+    CONSOLE_NAME="$_osname-$VM_RELEASE-console"
+    screen -S "$CONSOLE_NAME" -p 0 -X readbuf "$_file"
+    screen -S "$CONSOLE_NAME" -p 0 -X paste .
+  else
+    vncdotool --force-caps  --delay=100  typefile "$_file"
+  fi
 
 }
 
@@ -783,8 +789,12 @@ string() {
     echo "Usage: string netbsd"
     return 1
   fi
-  
-  vncdotool --force-caps type "$1"
+  if [ "$VM_USE_CONSOLE_BUILD" ]; then
+    CONSOLE_NAME="$_osname-$VM_RELEASE-console"
+    screen -S "$CONSOLE_NAME" -p 0 -X stuff "$1"
+  else
+    vncdotool --force-caps type "$1"
+  fi
 }
 
 
