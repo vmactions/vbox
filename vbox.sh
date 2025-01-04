@@ -6,6 +6,8 @@ set -e
 
 export PATH=$PATH:/Library/Frameworks/Python.framework/Versions/Current/bin
 
+_script="$0"
+_script_home="$(dirname "$_script")"
 
 
 
@@ -26,9 +28,9 @@ setup() {
   _installOCR="$1"
   if isLinux; then
     sudo apt-get update
-    sudo apt-get install   -y  zstd  libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm libosinfo-bin  axel expect
+    sudo apt-get install   -y  zstd  libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm libosinfo-bin  axel expect screen
 
-    if [ "$_installOCR" ]; then
+    if [ "$_installOCR" ] && [ -z "$VM_USE_CONSOLE_BUILD" ]; then
       sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn python3-opencv python3-pip
       if ! pip3 install --break-system-packages  pytesseract opencv-python vncdotool; then
         #ubuntu 22.04
@@ -172,10 +174,6 @@ createVMFromVHD() {
     --graphics vnc,listen=0.0.0.0 \
     --noautoconsole  --import --machine virt --noacpi --boot loader=/usr/share/AAVMF/AAVMF_CODE.fd
 
-    $_SUDO_VIR_  virsh  shutdown $_osname
-    $_SUDO_VIR_  virsh  destroy $_osname
-
-
   else
     $_SUDO_VIR_ virt-install \
     --name $_osname \
@@ -188,9 +186,10 @@ createVMFromVHD() {
     --graphics vnc,listen=0.0.0.0 \
     --noautoconsole  --import
 
-    $_SUDO_VIR_  virsh  shutdown $_osname
-    $_SUDO_VIR_  virsh  destroy $_osname
   fi
+
+  $_SUDO_VIR_  virsh  shutdown $_osname
+  $_SUDO_VIR_  virsh  destroy $_osname
 
 }
 
@@ -281,6 +280,22 @@ startVM() {
   fi
   rm -f $HOME/$_osname.rebooted
   $_SUDO_VIR_  virsh  start  $_osname 
+}
+
+
+
+openConsole() {
+  _osname="$1"
+  CONSOLE_NAME="$_osname-$VM_RELEASE-console"
+  CONSOLE_FILE="$_script_home/$_osname-$VM_RELEASE-console.log"
+  screen -dmLS "$CONSOLE_NAME" -Logfile "$CONSOLE_FILE" -L virsh console "$_osname"
+
+}
+
+closeConsole() {
+  _osname="$1"
+  CONSOLE_NAME="$_osname-$VM_RELEASE-console"
+  screen -S "$CONSOLE_NAME" -X quit
 }
 
 
@@ -461,22 +476,35 @@ screenText() {
     return 1
   fi
 
-  _png="${_img}"
-  if [ -z "$_img" ]; then
-    _png="$(mktemp).png"
-    echo "using _png=$_png"
+
+  CONSOLE_FILE="$_script_home/$_osname-$VM_RELEASE-console.log"
+
+  if [ -z "$VM_USE_CONSOLE_BUILD" ]; then
+    _png="${_img}"
+    if [ -z "$_img" ]; then
+      _png="$(mktemp).png"
+      echo "using _png=$_png"
+    fi
+    while ! vncdotool capture  $_png >/dev/null 2>&1; do
+     #echo "screenText error, lets just wait"
+      sleep 3
+    done
+    sudo chmod 666 $_png
   fi
-  while ! vncdotool capture  $_png >/dev/null 2>&1; do
-    #echo "screenText error, lets just wait"
-    sleep 3
-  done
-  sudo chmod 666 $_png
 
   if [ -z "$_img" ]; then
-    _ocr $_png
-    rm -rf $_png
+    if [ -z "$VM_USE_CONSOLE_BUILD" ]; then
+      _ocr $_png
+      rm -rf $_png
+    else
+      tail -100 "$CONSOLE_FILE"
+    fi
   else
-    _ocr $_png >screen.txt
+    if [ -z "$VM_USE_CONSOLE_BUILD" ]; then
+      _ocr $_png >screen.txt
+    else
+      tail -100 "$CONSOLE_FILE" >screen.txt
+    fi
 
     echo "<!DOCTYPE html>
 <html>
@@ -769,7 +797,12 @@ space() {
     echo "Usage: enter netbsd"
     return 1
   fi
-  vncdotool type ' '
+  if [ "$VM_USE_CONSOLE_BUILD" ]; then
+    CONSOLE_NAME="$_osname-$VM_RELEASE-console"
+    screen -S "$CONSOLE_NAME" -p 0 -X stuff " "
+  else
+    vncdotool type ' '
+  fi
 }
 
 #osname
@@ -780,7 +813,13 @@ enter() {
     echo "Usage: enter netbsd"
     return 1
   fi
-  vncdotool key enter
+  if [ "$VM_USE_CONSOLE_BUILD" ]; then
+    CONSOLE_NAME="$_osname-$VM_RELEASE-console"
+    screen -S "$CONSOLE_NAME" -p 0 -X stuff "\r"
+  else
+    vncdotool key enter
+  fi
+  
 }
 
 
@@ -792,7 +831,13 @@ tab() {
     echo "Usage: tab netbsd"
     return 1
   fi
-  vncdotool key tab
+  if [ "$VM_USE_CONSOLE_BUILD" ]; then
+    CONSOLE_NAME="$_osname-$VM_RELEASE-console"
+    screen -S "$CONSOLE_NAME" -p 0 -X stuff $'\t'
+  else
+    vncdotool key tab
+  fi
+
 }
 
 #osname
@@ -803,7 +848,13 @@ f2() {
     echo "Usage: f2 netbsd"
     return 1
   fi
-  vncdotool key f2
+  if [ "$VM_USE_CONSOLE_BUILD" ]; then
+    CONSOLE_NAME="$_osname-$VM_RELEASE-console"
+    screen -S "$CONSOLE_NAME" -p 0 -X stuff $'\e[12~'
+  else
+    vncdotool key f2
+  fi
+
 }
 
 #osname
@@ -814,7 +865,12 @@ f7() {
     echo "Usage: f7 netbsd"
     return 1
   fi
-  vncdotool key f7
+  if [ "$VM_USE_CONSOLE_BUILD" ]; then
+    CONSOLE_NAME="$_osname-$VM_RELEASE-console"
+    screen -S "$CONSOLE_NAME" -p 0 -X stuff $'\e[18~'
+  else
+    vncdotool key f7
+  fi
 }
 
 #osname
@@ -825,7 +881,12 @@ f8() {
     echo "Usage: f8 netbsd"
     return 1
   fi
-  vncdotool key f8
+  if [ "$VM_USE_CONSOLE_BUILD" ]; then
+    CONSOLE_NAME="$_osname-$VM_RELEASE-console"
+    screen -S "$CONSOLE_NAME" -p 0 -X stuff $'\e[19~'
+  else
+    vncdotool key f8
+  fi
 }
 
 
@@ -838,7 +899,12 @@ down() {
     echo "Usage: down netbsd"
     return 1
   fi
-  vncdotool key down
+  if [ "$VM_USE_CONSOLE_BUILD" ]; then
+    CONSOLE_NAME="$_osname-$VM_RELEASE-console"
+    screen -S "$CONSOLE_NAME" -p 0 -X stuff $'\e[B'
+  else
+    vncdotool key down
+  fi
 }
 
 
@@ -850,7 +916,12 @@ up() {
     echo "Usage: up netbsd"
     return 1
   fi
-  vncdotool key up
+  if [ "$VM_USE_CONSOLE_BUILD" ]; then
+    CONSOLE_NAME="$_osname-$VM_RELEASE-console"
+    screen -S "$CONSOLE_NAME" -p 0 -X stuff $'\e[A'
+  else
+    vncdotool key up
+  fi
 }
 
 
@@ -863,7 +934,12 @@ ctrlD() {
     echo "Usage: up netbsd"
     return 1
   fi
-  vncdotool key ctrl-d
+  if [ "$VM_USE_CONSOLE_BUILD" ]; then
+    CONSOLE_NAME="$_osname-$VM_RELEASE-console"
+    screen -S "$CONSOLE_NAME" -p 0 -X stuff $'\x04'
+  else
+    vncdotool key ctrl-d
+  fi
 }
 
 "$@"
