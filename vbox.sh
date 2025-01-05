@@ -394,6 +394,28 @@ isRunning() {
   return 1
 }
 
+detachIMG() {
+  _osname="$1"
+
+  _imgfile="$_script_home/$_osname.img"
+
+  if [ -z "$_osname" ]; then
+    echo "Usage: detachISO openbsd"
+    return 1
+  fi
+  echo "<disk type='file' device='disk'>
+  <driver name='qemu' type='raw'/>
+  <source file='$_imgfile' index='2'/>
+  <backingStore/>
+  <target dev='vda' bus='virtio'/>
+  <alias name='virtio-disk0'/>
+  <address type='pci' domain='0x0000' bus='0x04' slot='0x00' function='0x0'/>
+</disk>" >remove-cdrom.xml
+  $_SUDO_VIR_  virsh detach-device "$_osname" --file remove-cdrom.xml --persistent
+
+}
+
+
 detachISO() {
   _osname="$1"
   
