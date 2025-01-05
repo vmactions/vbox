@@ -527,13 +527,13 @@ screenText() {
       _ocr $_png
       rm -rf $_png
     else
-      tail -100 "$CONSOLE_FILE"
+      tail -50 "$CONSOLE_FILE"
     fi
   else
     if [ -z "$VM_USE_CONSOLE_BUILD" ]; then
       _ocr $_png >screen.txt
     else
-      tail -100 "$CONSOLE_FILE" >screen.txt
+      tail -50 "$CONSOLE_FILE" >screen.txt
     fi
 
     echo "<!DOCTYPE html>
