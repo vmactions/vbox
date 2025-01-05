@@ -423,9 +423,15 @@ detachISO() {
     echo "Usage: detachISO netbsd"
     return 1
   fi
-  echo "<disk type='file' device='cdrom'>
+  if [ "$VM_ARCH" = "aarch64" ]; then
+    echo "<disk type='file' device='cdrom'>
   <target dev='sda' bus='scsi'/>
 </disk>" >remove-cdrom.xml
+  else
+    echo "<disk type='file' device='cdrom'>
+  <target dev='hdc' bus='ide'/>
+</disk>" >remove-cdrom.xml
+  fi
   $_SUDO_VIR_  virsh detach-device "$_osname" --file remove-cdrom.xml --persistent
 
 }
