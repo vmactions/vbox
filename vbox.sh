@@ -30,7 +30,7 @@ setup() {
     sudo apt-get update
     sudo apt-get install   -y  zstd  libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm libosinfo-bin  axel expect screen
 
-    if [ "$_installOCR" ] && [ -z "$VM_USE_CONSOLE_BUILD" ]; then
+    if [ "$_installOCR" ]; then
       sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn python3-opencv python3-pip
       if ! pip3 install --break-system-packages  pytesseract opencv-python vncdotool; then
         #ubuntu 22.04
