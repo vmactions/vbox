@@ -295,7 +295,9 @@ openConsole() {
 closeConsole() {
   _osname="$1"
   CONSOLE_NAME="$_osname-$VM_RELEASE-console"
-  screen -S "$CONSOLE_NAME" -X quit
+  if screen -list | grep -q "$CONSOLE_NAME"; then
+    screen -S "$CONSOLE_NAME" -X quit
+  fi
 }
 
 
