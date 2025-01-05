@@ -108,8 +108,8 @@ createVM() {
       --memory 6144 \
       --vcpus 2 \
       --arch aarch64 \
-      --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
       --disk $_iso \
+      --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
       --os-variant=$_ostype \
       --network network=default,model=e1000 \
       --graphics vnc,listen=0.0.0.0 \
