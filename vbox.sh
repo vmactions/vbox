@@ -612,9 +612,9 @@ startWeb() {
   fi
 
   if [ "$_needOCR" ]; then
-    (while true; do screenText "$_osname" "screen.png"; sleep 1; done)&
+    (while true; do screenText "$_osname" "screen.png"; sleep 3; done)&
   else
-    (while true; do $_SUDO_VIR_  virsh "$_osname" "screen.ppm"; convert "screen.ppm" "screen.png"; sleep 1; done)&
+    (while true; do $_SUDO_VIR_  virsh "$_osname" "screen.ppm"; convert "screen.ppm" "screen.png"; sleep 3; done)&
   fi
 
 }
@@ -665,14 +665,14 @@ Host $_osname
 
   mkdir -p ~/.ssh/config.d
 
-  mkdir -p /home/runner/.local/bin
+  mkdir -p ~/.local/bin
   echo "#!/usr/bin/env sh
 
 ssh $_osname sh<\$1
   
-">/home/runner/.local/bin/$_osname
+">~/.local/bin/$_osname
 
-  chmod +x /home/runner/.local/bin/$_osname
+  chmod +x ~/.local/bin/$_osname
 
 }
 
