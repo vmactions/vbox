@@ -572,12 +572,18 @@ waitForText() {
   echo "Waiting for text: $_text"
   _t=0
   while [ -z "$_sec" ] || [ $_t -lt $_sec ]; do
-    sleep 1
-    _screenText="$(screenText $_osname)"
-    echo "$_screenText"
-    if echo "$_screenText" | grep -- "$_text" >/dev/null; then
+    sleep 3
+    screenText $_osname >_screenText.txt
+    echo ""
+    echo "==========screen Text============"
+    cat _screenText.txt
+    echo ""
+    echo "==========screen Text end============"
+    if grep -- "$_text" _screenText.txt; then
       echo "====> OK, found: $_text"
       return 0
+    elif [ "$DEBUG" ]; then
+      echo "Not found for text: $_text"
     fi
     _t=$((_t + 1))
     $_hook
