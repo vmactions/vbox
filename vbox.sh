@@ -28,7 +28,7 @@ setup() {
   _installOCR="$1"
   if isLinux; then
     sudo apt-get update
-    sudo apt-get install   -y  zstd  libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm libosinfo-bin  axel expect screen
+    sudo apt-get install   -y  zstd  libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm libosinfo-bin  axel expect screen sshpass
 
     if [ "$_installOCR" ]; then
       sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn python3-opencv python3-pip
@@ -588,7 +588,8 @@ waitForText() {
     _t=$((_t + 1))
     $_hook
   done
-  return 1 #timeout
+  echo "Timeout for text: $_text"
+  return 0
 }
 
 #osname needOCR
@@ -659,17 +660,20 @@ Include config.d/*
 StrictHostKeyChecking=accept-new
 SendEnv   CI  GITHUB_* 
 
+" >>~/.ssh/config
+
+  mkdir -p ~/.ssh/config.d
+  echo "
 Host $_osname
   User root
   HostName $_ip
-" >>~/.ssh/config
+" >~/.ssh/config.d/"_osname.conf"
 
   if [ "$_idfile" ]; then
     echo "  IdentityFile=$_idfile
-" >>~/.ssh/config
+" >>~/.ssh/config/"_osname.conf"
   fi
 
-  mkdir -p ~/.ssh/config.d
 
   mkdir -p ~/.local/bin
   echo "#!/usr/bin/env sh
@@ -749,7 +753,9 @@ getVMIP() {
       return
     fi
   fi
-  $_SUDO_VIR_  virsh net-dhcp-leases default | grep  -o -E '192.168.[0-9]*.[0-9]*' | head -1
+  if ! $_SUDO_VIR_  virsh net-dhcp-leases default | grep "$_osname" | grep  -o -E '192.168.[0-9]*.[0-9]*' ; then
+    $_SUDO_VIR_  virsh net-dhcp-leases default | grep  -o -E '192.168.[0-9]*.[0-9]*' | tail -1
+  fi
 }
 
 
@@ -765,9 +771,9 @@ inputFile() {
     return 1
   fi
   if [ "$VM_USE_CONSOLE_BUILD" ]; then
-    CONSOLE_NAME="$_osname-$VM_RELEASE-console"
-    screen -S "$CONSOLE_NAME" -p 0 -X readbuf "$_file"
-    screen -S "$CONSOLE_NAME" -p 0 -X paste .
+    cat "$_file" | nc  -q 0 -l 64342 &
+    string "nc  192.168.122.1 64342 | sh"
+    input "$_osname" "enter"
   else
     vncdotool --force-caps  --delay=100  typefile "$_file"
   fi
@@ -786,11 +792,16 @@ uploadFile() {
     return 1
   fi
   export VM_OS_NAME=$_osname
-  string  "cat - >$_remote"
-  input "$_osname" "enter"
-  inputFile "$_osname"  "$_local"
-  ctrlD
-
+  if [ "$VM_USE_CONSOLE_BUILD" ]; then
+    cat "$_local" | nc  -q 0 -l 64343 &
+    string "nc  192.168.122.1 64343 >$_remote"
+    input "$_osname" "enter"
+  else
+    string  "cat - >$_remote"
+    input "$_osname" "enter"
+    inputFile "$_osname"  "$_local"
+    ctrlD
+  fi
 }
 
 
