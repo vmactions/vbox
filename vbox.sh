@@ -573,10 +573,13 @@ waitForText() {
   _t=0
   while [ -z "$_sec" ] || [ $_t -lt $_sec ]; do
     sleep 3
+    if [ -e "_screenText.last.txt" ]; then
+      echo >_screenText.last.txt
+    fi
     screenText $_osname >_screenText.txt
     echo ""
     echo "==========screen Text============"
-    cat _screenText.txt
+    diff --new-line-format='%L' --unchanged-line-format='' _screenText.last.txt  _screenText.txt
     echo ""
     echo "==========screen Text end============"
     if grep -- "$_text" _screenText.txt; then
@@ -585,6 +588,7 @@ waitForText() {
     elif [ "$DEBUG" ]; then
       echo "Not found for text: $_text"
     fi
+    cat _screenText.txt >_screenText.last.txt
     _t=$((_t + 1))
     $_hook
   done
