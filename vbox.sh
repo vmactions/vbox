@@ -573,7 +573,7 @@ waitForText() {
   _t=0
   while [ -z "$_sec" ] || [ $_t -lt $_sec ]; do
     sleep 3
-    if [ -e "_screenText.last.txt" ]; then
+    if [ ! -e "_screenText.last.txt" ]; then
       echo >_screenText.last.txt
     fi
     screenText $_osname >_screenText.txt
