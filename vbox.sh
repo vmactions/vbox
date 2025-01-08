@@ -668,11 +668,11 @@ SendEnv   CI  GITHUB_*
 Host $_osname
   User root
   HostName $_ip
-" >~/.ssh/config.d/"_osname.conf"
+" >~/.ssh/config.d/"$_osname.conf"
 
   if [ "$_idfile" ]; then
     echo "  IdentityFile=$_idfile
-" >>~/.ssh/config/"_osname.conf"
+" >>~/.ssh/config.d/"$_osname.conf"
   fi
 
 
