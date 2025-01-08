@@ -288,6 +288,7 @@ openConsole() {
   _osname="$1"
   CONSOLE_NAME="$_osname-$VM_RELEASE-console"
   CONSOLE_FILE="$_script_home/$_osname-$VM_RELEASE-console.log"
+  rm -f "$CONSOLE_FILE"
   screen -dmLS "$CONSOLE_NAME" -Logfile "$CONSOLE_FILE" -L $_SUDO_VIR_ virsh console "$_osname"
 
 }
