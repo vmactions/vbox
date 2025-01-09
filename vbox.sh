@@ -106,7 +106,7 @@ createVM() {
       $_SUDO_VIR_ virt-install \
       --name $_osname \
       --memory 6144 \
-      --vcpus 2 \
+      --vcpus ${VM_CPU:-2} \
       --arch aarch64 \
       --disk $_iso \
       --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
@@ -132,8 +132,8 @@ createVM() {
     $_SUDO_VIR_ virt-install \
     --name $_osname \
     --memory 6144 \
-    --vcpus 2 \
-    --arch x86_64 \
+    --vcpus ${VM_CPU:-2} \
+    --arch ${VM_ARCH:-x86_64} \
     --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
     --cdrom $_iso \
     --os-variant=$_ostype \
@@ -166,7 +166,7 @@ createVMFromVHD() {
     $_SUDO_VIR_ virt-install \
     --name $_osname \
     --memory 6144 \
-    --vcpus 2 \
+    --vcpus ${VM_CPU:-2} \
     --arch ${VM_ARCH} \
     --disk $_vhd,format=qcow2,bus=${VM_DISK:-virtio} \
     --os-variant=$_ostype \
@@ -178,8 +178,8 @@ createVMFromVHD() {
     $_SUDO_VIR_ virt-install \
     --name $_osname \
     --memory 6144 \
-    --vcpus 2 \
-    --arch x86_64 \
+    --vcpus ${VM_CPU:-2} \
+    --arch ${VM_ARCH:-x86_64} \
     --disk $_vhd,format=qcow2,bus=${VM_DISK:-virtio} \
     --os-variant=$_ostype \
     --network network=default,model=e1000 \
@@ -226,7 +226,7 @@ importVM() {
     $_SUDO_VIR_ virt-install \
     --name $_osname \
     --memory 6144 \
-    --vcpus 2 \
+    --vcpus ${VM_CPU:-2} \
     --arch aarch64 \
     --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
     --os-variant=$_ostype \
@@ -754,8 +754,8 @@ getVMIP() {
       return
     fi
   fi
-  if ! $_SUDO_VIR_  virsh net-dhcp-leases default | grep "$_osname" | grep  -o -E '192.168.[0-9]*.[0-9]*' ; then
-    $_SUDO_VIR_  virsh net-dhcp-leases default | grep  -o -E '192.168.[0-9]*.[0-9]*' | tail -1
+  if ! $_SUDO_VIR_  virsh net-dhcp-leases default | sort | grep "ipv4" | tail -1 | grep "$_osname" | grep  -o -E '192.168.[0-9]*.[0-9]*'; then
+    $_SUDO_VIR_  virsh net-dhcp-leases default | sort | grep "ipv4"  | tail -1 | grep  -o -E '192.168.[0-9]*.[0-9]*'
   fi
 }
 
