@@ -10,6 +10,9 @@ _script="$0"
 _script_home="$(dirname "$_script")"
 
 
+VM_HOST_FILE_PORT=64342
+VM_HOST_IP_LISTEN_PORT=48392
+
 
 isLinux() {
   uname -a | grep -i "Linux" >/dev/null
@@ -256,13 +259,13 @@ importVM() {
 
 isVMReady() {
   _osname="$1"
-  [ -e "$HOME/$_osname.rebooted" ]
+  [ -e "$HOME/$_osname.rebooted" ] && [ -s "$HOME/$_osname.rebooted" ]
 }
 
 waitForVMReady() {
   _osname="$1"
   while ! isVMReady $_osname ; do
-    echo "VM is booting"
+    echo "VM is booting, just wait"
     sleep 2
     $_SUDO_VIR_ virsh send-key $_osname KEY_ENTER
   done
@@ -279,7 +282,8 @@ startVM() {
     return 1
   fi
   rm -f $HOME/$_osname.rebooted
-  $_SUDO_VIR_  virsh  start  $_osname 
+  nc -q 0 -l $VM_HOST_IP_LISTEN_PORT >$HOME/$_osname.rebooted &
+  $_SUDO_VIR_  virsh  start  $_osname
 }
 
 
@@ -772,8 +776,8 @@ inputFile() {
     return 1
   fi
   if [ "$VM_USE_CONSOLE_BUILD" ]; then
-    cat "$_file" | nc  -q 0 -l 64342 &
-    string "nc  192.168.122.1 64342 | sh"
+    cat "$_file" | nc  -q 0 -l $VM_HOST_FILE_PORT &
+    string "nc  192.168.122.1 $VM_HOST_FILE_PORT | sh"
     input "$_osname" "enter"
   else
     vncdotool --force-caps  --delay=100  typefile "$_file"
@@ -794,8 +798,8 @@ uploadFile() {
   fi
   export VM_OS_NAME=$_osname
   if [ "$VM_USE_CONSOLE_BUILD" ]; then
-    cat "$_local" | nc  -q 0 -l 64343 &
-    string "nc  192.168.122.1 64343 >$_remote"
+    cat "$_local" | nc  -q 0 -l "$VM_HOST_FILE_PORT" &
+    string "nc  192.168.122.1 "$VM_HOST_FILE_PORT" >$_remote"
     input "$_osname" "enter"
   else
     string  "cat - >$_remote"
