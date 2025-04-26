@@ -101,13 +101,13 @@ createVM() {
   
   qemu-img create -f qcow2 -o preallocation=off $_vdi 200G
 
-  if [ "$VM_ARCH" = "aarch64" ]; then
+  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
     if [[ "$_iso" == *"img" ]]; then
       $_SUDO_VIR_ virt-install \
       --name $_osname \
       --memory 6144 \
       --vcpus ${VM_CPU:-2} \
-      --arch aarch64 \
+      --arch "$VM_ARCH" \
       --disk $_iso \
       --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
       --os-variant=$_ostype \
@@ -119,7 +119,7 @@ createVM() {
       --name $_osname \
       --memory 6144 \
       --vcpus 2 \
-      --arch aarch64 \
+      --arch "$VM_ARCH" \
       --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
       --cdrom $_iso \
       --os-variant=$_ostype \
