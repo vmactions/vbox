@@ -162,7 +162,7 @@ createVMFromVHD() {
 
   sudo qemu-img resize $_vhd  +200G
 
-  if [ "$VM_ARCH" = "aarch64" ]; then
+  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
     $_SUDO_VIR_ virt-install \
     --name $_osname \
     --memory 6144 \
@@ -222,12 +222,12 @@ importVM() {
     return 1
   fi
 
-  if [ "$VM_ARCH" = "aarch64" ]; then
+  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
     $_SUDO_VIR_ virt-install \
     --name $_osname \
     --memory 6144 \
     --vcpus ${VM_CPU:-2} \
-    --arch aarch64 \
+    --arch "$VM_ARCH" \
     --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
     --os-variant=$_ostype \
     --network network=default,model=e1000 \
@@ -249,7 +249,7 @@ importVM() {
 
   $_SUDO_VIR_  virsh  shutdown $_osname
   $_SUDO_VIR_  virsh  destroy $_osname
-  if [ "$VM_ARCH" = "aarch64" ]; then
+  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
     disableSecureBoot $_osname
   fi
 }
@@ -424,7 +424,7 @@ detachISO() {
     echo "Usage: detachISO netbsd"
     return 1
   fi
-  if [ "$VM_ARCH" = "aarch64" ]; then
+  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
     echo "<disk type='file' device='cdrom'>
   <target dev='sda' bus='scsi'/>
 </disk>" >remove-cdrom.xml
