@@ -168,10 +168,8 @@ createVMFromVHD() {
   _vhd="$_osname.qcow2"
 
   sudo qemu-img resize $_vhd  +200G
-echo ">>>> $VM_ARCH"
-  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
-echo ">>>> $_SUDO_VIR_ virt-install  --name $_osname   --memory 6144    --vcpus ${VM_CPU:-2}    --arch ${VM_ARCH}   --disk $_vhd,format=qcow2,bus=${VM_DISK:-virtio}    --os-variant=$_ostype   --network network=default,model=e1000    --graphics vnc,listen=0.0.0.0     --noautoconsole  --import --machine virt --noacpi --boot loader=$__LOADER"
 
+  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
 
     $_SUDO_VIR_ virt-install \
     --name $_osname \
