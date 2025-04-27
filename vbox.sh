@@ -125,7 +125,7 @@ createVM() {
       $_SUDO_VIR_ virt-install \
       --name $_osname \
       --memory 6144 \
-      --vcpus 2 \
+      --vcpus ${VM_CPU:-2} \
       --arch "$VM_ARCH" \
       --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
       --cdrom $_iso \
@@ -359,6 +359,9 @@ clearVM() {
   if $_SUDO_VIR_  virsh list | grep $_osname; then
     $_SUDO_VIR_  virsh  shutdown $_osname
     $_SUDO_VIR_  virsh  destroy $_osname
+    $_SUDO_VIR_  virsh  undefine $_osname  --remove-all-storage
+  fi
+  if $_SUDO_VIR_  virsh list --all | grep $_osname; then
     $_SUDO_VIR_  virsh  undefine $_osname  --remove-all-storage
   fi
 
@@ -1009,6 +1012,5 @@ ctrlD() {
 }
 
 "$@"
-
 
 
