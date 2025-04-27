@@ -22,6 +22,13 @@ if isLinux; then
 fi
 
 
+__LOADER=""
+if [ "$VM_ARCH" = "aarch64" ]; then
+  $LOADER=/usr/share/AAVMF/AAVMF_CODE.fd
+elif [ "$VM_ARCH" = "riscv64" ]; then
+  $LOADER=/usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd
+fi
+
 
 #installOCR
 setup() {
@@ -113,7 +120,7 @@ createVM() {
       --os-variant=$_ostype \
       --network network=default,model=e1000 \
       --graphics vnc,listen=0.0.0.0 \
-      --noautoconsole  --import --machine virt --noacpi --boot loader=/usr/share/AAVMF/AAVMF_CODE.fd
+      --noautoconsole  --import --machine virt --noacpi --boot loader=$LOADER
     else
       $_SUDO_VIR_ virt-install \
       --name $_osname \
@@ -125,7 +132,7 @@ createVM() {
       --os-variant=$_ostype \
       --network network=default,model=e1000 \
       --graphics vnc,listen=0.0.0.0 \
-      --noautoconsole  --import --machine virt --noacpi --boot loader=/usr/share/AAVMF/AAVMF_CODE.fd
+      --noautoconsole  --import --machine virt --noacpi --boot loader=$LOADER
     fi
 
   else
@@ -172,7 +179,7 @@ createVMFromVHD() {
     --os-variant=$_ostype \
     --network network=default,model=e1000 \
     --graphics vnc,listen=0.0.0.0 \
-    --noautoconsole  --import --machine virt --noacpi --boot loader=/usr/share/AAVMF/AAVMF_CODE.fd
+    --noautoconsole  --import --machine virt --noacpi --boot loader=$LOADER
 
   else
     $_SUDO_VIR_ virt-install \
@@ -232,7 +239,7 @@ importVM() {
     --os-variant=$_ostype \
     --network network=default,model=e1000 \
     --graphics vnc,listen=0.0.0.0 \
-    --noautoconsole  --import --check all=off --machine virt --noacpi --boot loader=/usr/share/AAVMF/AAVMF_CODE.fd
+    --noautoconsole  --import --check all=off --machine virt --noacpi --boot loader=$LOADER
   else
     $_SUDO_VIR_  virt-install \
     --name $_osname \
