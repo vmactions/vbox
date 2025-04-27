@@ -24,9 +24,9 @@ fi
 
 __LOADER=""
 if [ "$VM_ARCH" = "aarch64" ]; then
-  $LOADER=/usr/share/AAVMF/AAVMF_CODE.fd
+  LOADER=/usr/share/AAVMF/AAVMF_CODE.fd
 elif [ "$VM_ARCH" = "riscv64" ]; then
-  $LOADER=/usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd
+  LOADER=/usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd
 fi
 
 
