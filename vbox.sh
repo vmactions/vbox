@@ -22,13 +22,20 @@ if isLinux; then
 fi
 
 
+__LOADER=""
+if [ "$VM_ARCH" = "aarch64" ]; then
+  __LOADER=/usr/share/AAVMF/AAVMF_CODE.fd
+elif [ "$VM_ARCH" = "riscv64" ]; then
+  __LOADER=/usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd
+fi
+
 
 #installOCR
 setup() {
   _installOCR="$1"
   if isLinux; then
     sudo apt-get update
-    sudo apt-get install   -y  zstd  libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm libosinfo-bin  axel expect screen sshpass
+    sudo apt-get install   -y  zstd  libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm qemu-efi-riscv64 libosinfo-bin  axel expect screen sshpass
 
     if [ "$_installOCR" ]; then
       sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn python3-opencv python3-pip
@@ -101,31 +108,31 @@ createVM() {
   
   qemu-img create -f qcow2 -o preallocation=off $_vdi 200G
 
-  if [ "$VM_ARCH" = "aarch64" ]; then
+  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
     if [[ "$_iso" == *"img" ]]; then
       $_SUDO_VIR_ virt-install \
       --name $_osname \
       --memory 6144 \
       --vcpus ${VM_CPU:-2} \
-      --arch aarch64 \
+      --arch "$VM_ARCH" \
       --disk $_iso \
       --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
       --os-variant=$_ostype \
       --network network=default,model=e1000 \
       --graphics vnc,listen=0.0.0.0 \
-      --noautoconsole  --import --machine virt --noacpi --boot loader=/usr/share/AAVMF/AAVMF_CODE.fd
+      --noautoconsole  --import --machine virt --noacpi --boot loader=$__LOADER
     else
       $_SUDO_VIR_ virt-install \
       --name $_osname \
       --memory 6144 \
       --vcpus 2 \
-      --arch aarch64 \
+      --arch "$VM_ARCH" \
       --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
       --cdrom $_iso \
       --os-variant=$_ostype \
       --network network=default,model=e1000 \
       --graphics vnc,listen=0.0.0.0 \
-      --noautoconsole  --import --machine virt --noacpi --boot loader=/usr/share/AAVMF/AAVMF_CODE.fd
+      --noautoconsole  --import --machine virt --noacpi --boot loader=$__LOADER
     fi
 
   else
@@ -162,7 +169,8 @@ createVMFromVHD() {
 
   sudo qemu-img resize $_vhd  +200G
 
-  if [ "$VM_ARCH" = "aarch64" ]; then
+  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
+
     $_SUDO_VIR_ virt-install \
     --name $_osname \
     --memory 6144 \
@@ -172,7 +180,7 @@ createVMFromVHD() {
     --os-variant=$_ostype \
     --network network=default,model=e1000 \
     --graphics vnc,listen=0.0.0.0 \
-    --noautoconsole  --import --machine virt --noacpi --boot loader=/usr/share/AAVMF/AAVMF_CODE.fd
+    --noautoconsole  --import --machine virt --noacpi --boot loader=$__LOADER
 
   else
     $_SUDO_VIR_ virt-install \
@@ -222,17 +230,17 @@ importVM() {
     return 1
   fi
 
-  if [ "$VM_ARCH" = "aarch64" ]; then
+  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
     $_SUDO_VIR_ virt-install \
     --name $_osname \
     --memory 6144 \
     --vcpus ${VM_CPU:-2} \
-    --arch aarch64 \
+    --arch "$VM_ARCH" \
     --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
     --os-variant=$_ostype \
     --network network=default,model=e1000 \
     --graphics vnc,listen=0.0.0.0 \
-    --noautoconsole  --import --check all=off --machine virt --noacpi --boot loader=/usr/share/AAVMF/AAVMF_CODE.fd
+    --noautoconsole  --import --check all=off --machine virt --noacpi --boot loader=$__LOADER
   else
     $_SUDO_VIR_  virt-install \
     --name $_osname \
@@ -249,7 +257,7 @@ importVM() {
 
   $_SUDO_VIR_  virsh  shutdown $_osname
   $_SUDO_VIR_  virsh  destroy $_osname
-  if [ "$VM_ARCH" = "aarch64" ]; then
+  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
     disableSecureBoot $_osname
   fi
 }
@@ -424,7 +432,7 @@ detachISO() {
     echo "Usage: detachISO netbsd"
     return 1
   fi
-  if [ "$VM_ARCH" = "aarch64" ]; then
+  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
     echo "<disk type='file' device='cdrom'>
   <target dev='sda' bus='scsi'/>
 </disk>" >remove-cdrom.xml
