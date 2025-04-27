@@ -35,7 +35,7 @@ setup() {
   _installOCR="$1"
   if isLinux; then
     sudo apt-get update
-    sudo apt-get install   -y  zstd  libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm qemu-efi-riscv64 libosinfo-bin  axel expect screen sshpass
+    sudo apt-get install   -y  zstd  libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm qemu-efi-riscv64 qemu-system-riscv64 libosinfo-bin  axel expect screen sshpass
 
     if [ "$_installOCR" ]; then
       sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn python3-opencv python3-pip
