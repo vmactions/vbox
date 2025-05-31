@@ -35,7 +35,7 @@ setup() {
   _installOCR="$1"
   if isLinux; then
     sudo apt-get update
-    sudo apt-get install   -y  zstd  libvirt-daemon-system   virt-manager qemu-kvm qemu-system-arm qemu-efi-riscv64 qemu-system-riscv64 libosinfo-bin  axel expect screen sshpass
+    sudo apt-get install   -y  zstd  libvirt-daemon-system   virt-manager qemu-kvm libosinfo-bin  axel expect screen sshpass
 
     if [ "$_installOCR" ]; then
       sudo apt-get install  -y tesseract-ocr python3-pil tesseract-ocr-eng tesseract-ocr-script-latn python3-opencv python3-pip
@@ -43,6 +43,12 @@ setup() {
         #ubuntu 22.04
         pip3 install   pytesseract opencv-python vncdotool
       fi
+    fi
+    if [ "$VM_ARCH" = "riscv64" ]; then
+      sudo apt-get install   -y  qemu-efi-riscv64 qemu-system-riscv64
+    fi
+    if [ "$VM_ARCH" = "aarch64" ]; then
+      sudo apt-get install   -y  qemu-system-arm
     fi
 
   else
