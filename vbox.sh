@@ -281,10 +281,12 @@ waitForVMReady() {
   while ! isVMReady $_osname ; do
     echo "VM is booting, just wait"
     sleep 2
-    $_SUDO_VIR_ virsh send-key $_osname KEY_ENTER
+    if ! $_SUDO_VIR_ virsh send-key $_osname KEY_ENTER; then
+      echo "wait"
+    fi
 
     ((count++))
-    if [ "$count" -ge "$max_loops" ]; then
+    if [ $count -ge $max_loops ]; then
       echo "boot timeout, exit"
       return 1
     fi
