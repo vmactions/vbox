@@ -124,7 +124,7 @@ createVM() {
       --disk $_iso \
       --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
       --os-variant=$_ostype \
-      --network network=default,model=e1000 \
+      --network network=default,model=${VM_NIC:-e1000} \
       --graphics vnc,listen=0.0.0.0 \
       --noautoconsole  --import --machine virt --noacpi --boot loader=$__LOADER
     else
@@ -136,7 +136,7 @@ createVM() {
       --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
       --cdrom $_iso \
       --os-variant=$_ostype \
-      --network network=default,model=e1000 \
+      --network network=default,model=${VM_NIC:-e1000} \
       --graphics vnc,listen=0.0.0.0 \
       --noautoconsole  --import --machine virt --noacpi --boot loader=$__LOADER
     fi
@@ -150,7 +150,7 @@ createVM() {
     --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
     --cdrom $_iso \
     --os-variant=$_ostype \
-    --network network=default,model=e1000 \
+    --network network=default,model=${VM_NIC:-e1000} \
     --graphics vnc,listen=0.0.0.0 \
     --noautoconsole  --import
   fi
@@ -184,7 +184,7 @@ createVMFromVHD() {
     --arch ${VM_ARCH} \
     --disk $_vhd,format=qcow2,bus=${VM_DISK:-virtio} \
     --os-variant=$_ostype \
-    --network network=default,model=e1000 \
+    --network network=default,model=${VM_NIC:-e1000} \
     --graphics vnc,listen=0.0.0.0 \
     --noautoconsole  --import --machine virt --noacpi --boot loader=$__LOADER
 
@@ -196,7 +196,7 @@ createVMFromVHD() {
     --arch ${VM_ARCH:-x86_64} \
     --disk $_vhd,format=qcow2,bus=${VM_DISK:-virtio} \
     --os-variant=$_ostype \
-    --network network=default,model=e1000 \
+    --network network=default,model=${VM_NIC:-e1000} \
     --graphics vnc,listen=0.0.0.0 \
     --noautoconsole  --import
 
@@ -244,7 +244,7 @@ importVM() {
     --arch "$VM_ARCH" \
     --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
     --os-variant=$_ostype \
-    --network network=default,model=e1000 \
+    --network network=default,model=${VM_NIC:-e1000} \
     --graphics vnc,listen=0.0.0.0 \
     --noautoconsole  --import --check all=off --machine virt --noacpi --boot loader=$__LOADER
   else
@@ -255,7 +255,7 @@ importVM() {
     --arch ${VM_ARCH:-x86_64} \
     --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
     --os-variant=$_ostype \
-    --network network=default,model=e1000 \
+    --network network=default,model=${VM_NIC:-e1000} \
     --graphics vnc,listen=0.0.0.0 \
     --noautoconsole  --import  --check all=off
   fi
