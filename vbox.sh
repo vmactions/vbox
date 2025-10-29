@@ -242,8 +242,8 @@ importVM() {
   if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
     $_SUDO_VIR_ virt-install \
     --name $_osname \
-    --memory 6144 \
-    --vcpus ${VM_CPU:-2} \
+    --memory $_mem \
+    --vcpus $_cpu \
     --arch "$VM_ARCH" \
     --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
     --os-variant=$_ostype \
