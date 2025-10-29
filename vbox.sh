@@ -43,6 +43,9 @@ setup() {
         #ubuntu 22.04
         pip3 install   pytesseract opencv-python vncdotool
       fi
+      if [ -e "$HOME/.local/bin/vncdotool" ]; then
+        sudo ln -sf "$HOME/.local/bin/vncdotool" /usr/local/bin/vncdotool
+      fi
     fi
     if [ "$VM_ARCH" = "riscv64" ]; then
       sudo apt-get install   -y  qemu-efi-riscv64 qemu-system-riscv64
