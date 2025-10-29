@@ -74,7 +74,7 @@ EOF
   fi
   mkdir -p "$HOME/.ssh"
   chmod 700 "$HOME/.ssh"
-  sudo chmod o+rx $HOME
+  sudo chmod 755 $HOME
 }
 
 
