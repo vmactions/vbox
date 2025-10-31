@@ -808,7 +808,15 @@ inputFile() {
     string "nc  192.168.122.1 64342 | sh"
     input "$_osname" "enter"
   else
-    vncdotool --force-caps  --delay=100  typefile "$_file"
+    # work-around vncdotool's issues with special charecters
+    # by sending the file 1 chars at a time
+    # https://github.com/sibson/vncdotool/issues/269
+    while IFS= read -r line; do
+      for (( i=0; i<${#line}; i++ )); do
+        vncdotool --force-caps type "${line:i:1}"
+      done
+      vncdotool key enter
+    done < "$_file"
   fi
 
 }
