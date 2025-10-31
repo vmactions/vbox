@@ -808,10 +808,29 @@ inputFile() {
     string "nc  192.168.122.1 64342 | sh"
     input "$_osname" "enter"
   else
-    vncdotool --force-caps  --delay=100  typefile "$_file"
+    vncdotool --force-caps  --delay=150  typefile "$_file"
   fi
 
 }
+
+
+#force to input file by nc
+#just because inputFile() is not working well with vncdotool for openbsd arm
+inputFileConsole() {
+  _osname="$1"
+  _file="$2"
+
+  if [ -z "$_file" ]; then
+    echo "Usage: inputFile netbsd file.txt"
+    return 1
+  fi
+
+  cat "$_file" | nc  -q 0 -l 64342 &
+  string "nc  192.168.122.1 64342 | sh"
+  input "$_osname" "enter"
+
+}
+
 
 
 #upload a local file into the remote VM
