@@ -25,8 +25,6 @@ fi
 __LOADER=""
 if [ "$VM_ARCH" = "aarch64" ]; then
   __LOADER=/usr/share/AAVMF/AAVMF_CODE.fd
-elif [ "$VM_ARCH" = "riscv64" ]; then
-  __LOADER=/usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd
 fi
 
 
@@ -48,7 +46,7 @@ setup() {
       fi
     fi
     if [ "$VM_ARCH" = "riscv64" ]; then
-      sudo apt-get install   -y  qemu-efi-riscv64 qemu-system-riscv64
+      sudo apt-get install   -y  qemu-efi-riscv64 qemu-system-riscv64 u-boot-qemu
     fi
     if [ "$VM_ARCH" = "aarch64" ]; then
       sudo apt-get install   -y  qemu-system-arm
@@ -117,7 +115,7 @@ createVM() {
   
   qemu-img create -f qcow2 -o preallocation=off $_vdi 200G
 
-  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
+  if [ "$VM_ARCH" = "aarch64" ]; then
     if [[ "$_iso" == *"img" ]]; then
       $_SUDO_VIR_ virt-install \
       --name $_osname \
@@ -143,7 +141,18 @@ createVM() {
       --graphics vnc,listen=0.0.0.0 \
       --noautoconsole  --import --machine virt --noacpi --boot loader=$__LOADER
     fi
-
+  elif [ "$VM_ARCH" = "riscv64" ]; then
+    $_SUDO_VIR_ virt-install \
+      --name $_osname \
+      --memory 6144 \
+      --vcpus ${VM_CPU:-2} \
+      --arch "$VM_ARCH" \
+      --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
+      --cdrom $_iso \
+      --os-variant=$_ostype \
+      --network network=default,model=${VM_NIC:-e1000} \
+      --graphics vnc,listen=0.0.0.0 \
+      --noautoconsole  --import --machine virt --noacpi --boot kernel=/usr/lib/u-boot/qemu-riscv64_smode/u-boot.bin
   else
     $_SUDO_VIR_ virt-install \
     --name $_osname \
@@ -178,8 +187,7 @@ createVMFromVHD() {
 
   sudo qemu-img resize $_vhd  +200G
 
-  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
-
+  if [ "$VM_ARCH" = "aarch64" ]; then
     $_SUDO_VIR_ virt-install \
     --name $_osname \
     --memory 6144 \
@@ -190,6 +198,18 @@ createVMFromVHD() {
     --network network=default,model=${VM_NIC:-e1000} \
     --graphics vnc,listen=0.0.0.0 \
     --noautoconsole  --import --machine virt --noacpi --boot loader=$__LOADER
+
+  elif [ "$VM_ARCH" = "riscv64" ]; then
+    $_SUDO_VIR_ virt-install \
+    --name $_osname \
+    --memory 6144 \
+    --vcpus ${VM_CPU:-2} \
+    --arch ${VM_ARCH} \
+    --disk $_vhd,format=qcow2,bus=${VM_DISK:-virtio} \
+    --os-variant=$_ostype \
+    --network network=default,model=${VM_NIC:-e1000} \
+    --graphics vnc,listen=0.0.0.0 \
+    --noautoconsole  --import --machine virt --noacpi --boot kernel=/usr/lib/u-boot/qemu-riscv64_smode/u-boot.bin
 
   else
     $_SUDO_VIR_ virt-install \
@@ -239,7 +259,7 @@ importVM() {
     return 1
   fi
 
-  if [ "$VM_ARCH" = "aarch64" ] || [ "$VM_ARCH" = "riscv64" ]; then
+  if [ "$VM_ARCH" = "aarch64" ]; then
     $_SUDO_VIR_ virt-install \
     --name $_osname \
     --memory $_mem \
@@ -250,6 +270,17 @@ importVM() {
     --network network=default,model=${VM_NIC:-e1000} \
     --graphics vnc,listen=0.0.0.0 \
     --noautoconsole  --import --check all=off --machine virt --noacpi --boot loader=$__LOADER
+  elif [ "$VM_ARCH" = "riscv64" ]; then
+    $_SUDO_VIR_ virt-install \
+    --name $_osname \
+    --memory $_mem \
+    --vcpus $_cpu \
+    --arch "$VM_ARCH" \
+    --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
+    --os-variant=$_ostype \
+    --network network=default,model=${VM_NIC:-e1000} \
+    --graphics vnc,listen=0.0.0.0 \
+    --noautoconsole  --import --check all=off --machine virt --noacpi --boot kernel=/usr/lib/u-boot/qemu-riscv64_smode/u-boot.bin
   else
     $_SUDO_VIR_  virt-install \
     --name $_osname \
