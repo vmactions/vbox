@@ -142,7 +142,20 @@ createVM() {
       --noautoconsole  --import --machine virt --noacpi --boot loader=$__LOADER
     fi
   elif [ "$VM_ARCH" = "riscv64" ]; then
-    $_SUDO_VIR_ virt-install \
+    if [[ "$_iso" == *"img" ]]; then
+      $_SUDO_VIR_ virt-install \
+      --name $_osname \
+      --memory 6144 \
+      --vcpus ${VM_CPU:-2} \
+      --arch "$VM_ARCH" \
+      --disk $_iso \
+      --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
+      --os-variant=$_ostype \
+      --network network=default,model=${VM_NIC:-e1000} \
+      --graphics vnc,listen=0.0.0.0 \
+      --noautoconsole  --import --machine virt --noacpi --boot kernel=/usr/lib/u-boot/qemu-riscv64_smode/u-boot.bin
+    else
+      $_SUDO_VIR_ virt-install \
       --name $_osname \
       --memory 6144 \
       --vcpus ${VM_CPU:-2} \
@@ -153,6 +166,33 @@ createVM() {
       --network network=default,model=${VM_NIC:-e1000} \
       --graphics vnc,listen=0.0.0.0 \
       --noautoconsole  --import --machine virt --noacpi --boot kernel=/usr/lib/u-boot/qemu-riscv64_smode/u-boot.bin
+    fi
+  elif [ "$VM_ARCH" = "sparc64" ]; then
+    if [[ "$_iso" == *"img" ]]; then
+      $_SUDO_VIR_ virt-install \
+      --name $_osname \
+      --memory 6144 \
+      --vcpus ${VM_CPU:-1} \
+      --arch "$VM_ARCH" \
+      --disk $_iso \
+      --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
+      --os-variant=$_ostype \
+      --network network=default,model=${VM_NIC:-e1000} \
+      --graphics vnc,listen=0.0.0.0 \
+      --noautoconsole  --import --machine sun4u --noacpi --boot loader=/usr/share/qemu/openbios-sparc64
+    else
+      $_SUDO_VIR_ virt-install \
+      --name $_osname \
+      --memory 6144 \
+      --vcpus ${VM_CPU:-1} \
+      --arch "$VM_ARCH" \
+      --disk path=$_vdi,format=qcow2,bus=${VM_DISK:-virtio} \
+      --cdrom $_iso \
+      --os-variant=$_ostype \
+      --network network=default,model=${VM_NIC:-e1000} \
+      --graphics vnc,listen=0.0.0.0 \
+      --noautoconsole  --import --machine sun4u --noacpi --boot loader=/usr/share/qemu/openbios-sparc64
+    fi
   else
     $_SUDO_VIR_ virt-install \
     --name $_osname \
@@ -210,7 +250,17 @@ createVMFromVHD() {
     --network network=default,model=${VM_NIC:-e1000} \
     --graphics vnc,listen=0.0.0.0 \
     --noautoconsole  --import --machine virt --noacpi --boot kernel=/usr/lib/u-boot/qemu-riscv64_smode/u-boot.bin
-
+  elif [ "$VM_ARCH" = "sparc64" ]; then
+    $_SUDO_VIR_ virt-install \
+    --name $_osname \
+    --memory 6144 \
+    --vcpus ${VM_CPU:-1} \
+    --arch ${VM_ARCH} \
+    --disk $_vhd,format=qcow2,bus=${VM_DISK:-virtio} \
+    --os-variant=$_ostype \
+    --network network=default,model=${VM_NIC:-e1000} \
+    --graphics vnc,listen=0.0.0.0 \
+    --noautoconsole  --import --machine sun4u --noacpi --boot loader=/usr/share/qemu/openbios-sparc64
   else
     $_SUDO_VIR_ virt-install \
     --name $_osname \
@@ -281,6 +331,17 @@ importVM() {
     --network network=default,model=${VM_NIC:-e1000} \
     --graphics vnc,listen=0.0.0.0 \
     --noautoconsole  --import --check all=off --machine virt --noacpi --boot kernel=/usr/lib/u-boot/qemu-riscv64_smode/u-boot.bin
+  elif [ "$VM_ARCH" = "sparc64" ]; then
+    $_SUDO_VIR_ virt-install \
+    --name $_osname \
+    --memory $_mem \
+    --vcpus $_cpu \
+    --arch "$VM_ARCH" \
+    --disk $_ova,format=qcow2,bus=${VM_DISK:-virtio} \
+    --os-variant=$_ostype \
+    --network network=default,model=${VM_NIC:-e1000} \
+    --graphics vnc,listen=0.0.0.0 \
+    --noautoconsole  --import --check all=off --machine sun4u --noacpi --boot loader=/usr/share/qemu/openbios-sparc64
   else
     $_SUDO_VIR_  virt-install \
     --name $_osname \
@@ -315,8 +376,12 @@ waitForVMReady() {
   while ! isVMReady "$_osname" ; do
     echo "VM is booting, just wait please"
     sleep 2
-    if ! $_SUDO_VIR_ virsh send-key "$_osname" KEY_ENTER; then
-      echo "wait"
+    #don't press any key for openbsd riscv64
+    #otherwise, it would abort u-boot
+    if [ "$VM_ARCH" != "riscv64" ]; then
+      if ! $_SUDO_VIR_ virsh send-key "$_osname" KEY_ENTER; then
+        echo "wait"
+      fi
     fi
     count=$((count + 1))
     echo "next $count"
