@@ -759,6 +759,7 @@ startWeb() {
 exportOVA() {
   _osname="$1"
   _ova="$2"
+  _xml="$3"
   if [ -z "$_ova" ]; then
     echo "Usage: exportOVA netbsd netbsd.9.2.qcow2"
     return 1
@@ -770,6 +771,9 @@ exportOVA() {
   ls -lah
   sudo mv "$_ova.zst.0" "$_ova.zst"
   sudo chmod +r ${_ova}.zst*
+  if [ "$_xml" ]; then
+    $_SUDO_VIR_  virsh dumpxml $_osname >$_xml
+  fi
 }
 
 
