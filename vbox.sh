@@ -916,7 +916,7 @@ inputFile() {
 
 #force to input file by nc
 #just because inputFile() is not working well with vncdotool for openbsd arm
-inputFileConsole() {
+inputFileNC() {
   _osname="$1"
   _file="$2"
 
@@ -931,6 +931,55 @@ inputFileConsole() {
 
 }
 
+
+#openIndiana doesn't have nc installed, so we have to use telnet instead
+inputFileTelnet() {
+  _osname="$1"
+  _file="$2"
+
+  if [ -z "$_file" ]; then
+    echo "Usage: inputFile netbsd file.txt"
+    return 1
+  fi
+
+  cat "$_file" | nc  -q 0 -l 64342 &
+  string "( sleep 1; ) | telnet 192.168.122.1 64342 | bash"
+  input "$_osname" "enter"
+
+}
+
+
+inputFileBash() {
+  _osname="$1"
+  _file="$2"
+
+  if [ -z "$_file" ]; then
+    echo "Usage: inputFile netbsd file.txt"
+    return 1
+  fi
+
+  cat "$_file" | nc  -q 0 -l 64342 &
+  string "bash -c 'bash <(exec 3<>/dev/tcp/192.168.122.1/64342; cat <&3)'"
+  input "$_osname" "enter"
+
+}
+
+inputFileStdIn() {
+  _osname="$1"
+  _file="$2"
+
+  if [ -z "$_file" ]; then
+    echo "Usage: inputFile netbsd file.txt"
+    return 1
+  fi
+
+  while IFS= read -r line || [ -n "$line" ]; do
+    string "$line"
+    input "$_osname" "enter"
+    sleep 1
+  done < "$_file"
+
+}
 
 
 #upload a local file into the remote VM
