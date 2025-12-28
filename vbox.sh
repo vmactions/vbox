@@ -92,10 +92,11 @@ createVM() {
   _osname="$2"
   _ostype="$3"
   _sshport="$4"
+  _formatedDiskLink="$5"
   
   if [ -z "$_osname" ]; then
-    echo "Usage: createVM  isolink  osname  ostype  sshport"
-    echo "Usage: createVM  'https://xxxxx.com/xxx.iso'   netbsd   NetBSD_64  2225"
+    echo "Usage: createVM  isolink  osname  ostype  sshport [formattedDiskLink]"
+    echo "Usage: createVM  'https://xxxxx.com/xxx.iso'   netbsd   NetBSD_64  2225  'https://xxxxx.com/xxx.qcow2'"
     return 1
   fi
 
@@ -113,7 +114,13 @@ createVM() {
    fi
   fi
   
-  qemu-img create -f qcow2 -o preallocation=off $_vdi 200G
+  if [ -n "$_formatedDiskLink" ]; then
+    if [ ! -e "$_vdi" ]; then
+      download "$_formatedDiskLink" "$_vdi"
+    fi
+  else
+    qemu-img create -f qcow2 -o preallocation=off $_vdi 200G
+  fi
 
   if [ "$VM_ARCH" = "aarch64" ]; then
     if [[ "$_iso" == *"img" ]]; then
@@ -782,6 +789,14 @@ exportOVA() {
 addSSHHost() {
   _osname="$1"
   _idfile="$2"
+  _user="$3"
+  if [ -z "$_user" ]; then
+    if [ "$_osname" = "haiku" ]; then
+      _user=user
+    else
+      _user=root
+    fi
+  fi
 
   if [ ! -e ~/.ssh/id_rsa ] ; then 
     ssh-keygen -f  ~/.ssh/id_rsa -q -N "" 
@@ -799,7 +814,7 @@ SendEnv   CI  GITHUB_*
   mkdir -p ~/.ssh/config.d
   echo "
 Host $_osname
-  User root
+  User $_user
   HostName $_ip
 " >~/.ssh/config.d/"$_osname.conf"
 
