@@ -121,6 +121,7 @@ createVM() {
   else
     qemu-img create -f qcow2 -o preallocation=off $_vdi 200G
   fi
+  $_SUDO_VIR_ chmod 777 $_vdi
 
   if [ "$VM_ARCH" = "aarch64" ]; then
     if [[ "$_iso" == *"img" ]]; then
