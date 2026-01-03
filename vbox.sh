@@ -775,8 +775,7 @@ exportOVA() {
 
   _sor="$($_SUDO_VIR_  virsh domblklist $_osname | grep -E -o '/.*qcow2')"
   echo "$_sor"
-  sudo qemu-img convert -O qcow2 -c "$_sor" "$_ova"
-  sudo zstd -c "$_ova" | split -b 2000M -d -a 1 - "$_ova.zst."
+  sudo zstd -c "$_sor" | split -b 2000M -d -a 1 - "$_ova.zst."
   ls -lah
   sudo mv "$_ova.zst.0" "$_ova.zst"
   sudo chmod +r ${_ova}.zst*
